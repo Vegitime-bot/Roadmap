@@ -1,0 +1,323 @@
+{
+  "_meta": {
+    "description": "Sample DB v3. 실제 운영 record 구조 반영: 기준정보 wide format에 milestone 6종(K/O·MTO·FS·PVR·PRA·SRA), 제품 분류 PG1~PG7 계층, 다양한 공정/spec 컬럼, Customer/Application 등. Recipe 기본정보에 lineup_field, comment_field, brief_pair 추가.",
+    "version": 3
+  },
+  "master_tables": {
+    "display_products": {
+      "_note": "Display 제품군 기준정보. milestone은 K/O, MTO, FS, PVR, PRA, SRA (CQ) — 순서대로.",
+      "columns": [
+        "MAST_CODE",
+        "PG1",
+        "PG2",
+        "PG3",
+        "PG4",
+        "PG5",
+        "PG6",
+        "PG7",
+        "inch(S)",
+        "DR(S)",
+        "PROCESS",
+        "FAB(S)",
+        "PKG",
+        "Customer",
+        "Application",
+        "Feature",
+        "Comment",
+        "K/O",
+        "MTO",
+        "FS",
+        "PVR",
+        "PRA",
+        "SRA (CQ)",
+        "SV",
+        "HV"
+      ],
+      "rows": [
+        {
+          "MAST_CODE": "S6ABBCC",
+          "PG1": "LSI",
+          "PG2": "DISPLAY",
+          "PG3": "CON",
+          "PG4": "LCD",
+          "PG5": "OTHERS",
+          "PG6": "NOTE PCS",
+          "PG7": "120Hz",
+          "inch(S)": "12\"",
+          "DR(S)": "0.028",
+          "PROCESS": "SF 28nm",
+          "FAB(S)": "SEGH",
+          "PKG": "QFN",
+          "Customer": "WW",
+          "Application": "LCD",
+          "Feature": "LCD, CISP, eP, VLR, AC, CAC, FD",
+          "Comment": "HD, eD, Rx, CSSP Tx, VR, CC, CBC",
+          "K/O": "2026-03-24",
+          "MTO": "2026-04-01",
+          "FS": "2026-05-31",
+          "PVR": "2026-08-31",
+          "PRA": "2027-03-10",
+          "SRA (CQ)": "2027-05-10",
+          "SV": "2026-06-30",
+          "HV": "2026-08-01"
+        },
+        {
+          "MAST_CODE": "S6ABBDD",
+          "PG1": "LSI",
+          "PG2": "DISPLAY",
+          "PG3": "CON",
+          "PG4": "LCD",
+          "PG5": "OTHERS",
+          "PG6": "NOTE PCS",
+          "PG7": "60Hz",
+          "inch(S)": "13\"",
+          "DR(S)": "0.030",
+          "PROCESS": "SF 28nm",
+          "FAB(S)": "SEGH",
+          "PKG": "QFN",
+          "Customer": "WW",
+          "Application": "LCD",
+          "Feature": "LCD, CISP, eP",
+          "Comment": "보급형 라인업",
+          "K/O": "2026-06-01",
+          "MTO": "2026-07-01",
+          "FS": "2026-09-30",
+          "PVR": "2027-01-15",
+          "PRA": "2027-07-30",
+          "SRA (CQ)": "2027-10-15",
+          "SV": "2026-10-30",
+          "HV": "2026-12-16"
+        },
+        {
+          "MAST_CODE": "S6ABBEE",
+          "PG1": "LSI",
+          "PG2": "DISPLAY",
+          "PG3": "CON",
+          "PG4": "OLED",
+          "PG5": "PREMIUM",
+          "PG6": "MOBILE",
+          "PG7": "120Hz",
+          "inch(S)": "6.5\"",
+          "DR(S)": "0.024",
+          "PROCESS": "SF 22nm",
+          "FAB(S)": "SEGH",
+          "PKG": "WLCSP",
+          "Customer": "K Customer",
+          "Application": "OLED",
+          "Feature": "AMOLED, HDR10+, VR",
+          "Comment": "프리미엄 모바일",
+          "K/O": "2027-02-01",
+          "MTO": "2027-03-15",
+          "FS": "2027-06-30",
+          "PVR": "2027-10-15",
+          "PRA": "2028-04-30",
+          "SRA (CQ)": "2028-07-15",
+          "SV": "2027-07-30",
+          "HV": "2027-09-15"
+        },
+        {
+          "MAST_CODE": "S6ABBFF",
+          "PG1": "LSI",
+          "PG2": "DISPLAY",
+          "PG3": "CON",
+          "PG4": "OLED",
+          "PG5": "PREMIUM",
+          "PG6": "TABLET",
+          "PG7": "90Hz",
+          "inch(S)": "11\"",
+          "DR(S)": "0.024",
+          "PROCESS": "SF 22nm",
+          "FAB(S)": "SEGH",
+          "PKG": "WLCSP",
+          "Customer": "K Customer",
+          "Application": "OLED",
+          "Feature": "AMOLED, HDR10+",
+          "Comment": "타블릿 라인업",
+          "K/O": "2027-08-01",
+          "MTO": "2027-09-15",
+          "FS": "2028-01-30",
+          "PVR": "2028-06-15",
+          "PRA": "2028-12-30",
+          "SRA (CQ)": "2029-03-30",
+          "SV": "2028-02-29",
+          "HV": "2028-05-16"
+        },
+        {
+          "MAST_CODE": "S6ABBGG",
+          "PG1": "LSI",
+          "PG2": "DISPLAY",
+          "PG3": "CON",
+          "PG4": "MICRO-LED",
+          "PG5": "NEXT_GEN",
+          "PG6": "TV",
+          "PG7": "120Hz",
+          "inch(S)": "65\"",
+          "DR(S)": "0.020",
+          "PROCESS": "SF 14nm",
+          "FAB(S)": "SEGH",
+          "PKG": "BGA",
+          "Customer": "TBD",
+          "Application": "Micro-LED",
+          "Feature": "차세대 디스플레이",
+          "Comment": "Micro-LED 선행",
+          "K/O": "2029-01-01",
+          "MTO": "2029-04-01",
+          "FS": "2029-09-30",
+          "PVR": "2030-03-31",
+          "PRA": "2030-12-31",
+          "SRA (CQ)": "2031-06-30",
+          "SV": "2029-10-30",
+          "HV": "2030-03-01"
+        }
+      ]
+    }
+  },
+  "attribute_tables": {
+    "_note_lineup": "PG2/PG3/PG4 등 어떤 PG 레벨을 lineup으로 쓸지는 Recipe에서 결정. 여기서는 PG4(LCD/OLED/MICRO-LED)를 lineup으로, PG5(OTHERS/PREMIUM/NEXT_GEN)를 super-lineup으로 활용하는 예시.",
+    "milestone_style": {
+      "columns": [
+        "MS_NAME",
+        "COLOR",
+        "ICON",
+        "DESCRIPTION"
+      ],
+      "rows": [
+        {
+          "MS_NAME": "K/O",
+          "COLOR": "#598B45",
+          "ICON": "arrow",
+          "DESCRIPTION": "Kick-off (개발 착수)"
+        },
+        {
+          "MS_NAME": "MTO",
+          "COLOR": "#3F6CA8",
+          "ICON": "arrow",
+          "DESCRIPTION": "Mask Tape-Out"
+        },
+        {
+          "MS_NAME": "FS",
+          "COLOR": "#94a3b8",
+          "ICON": "circle",
+          "DESCRIPTION": "Feasibility Study"
+        },
+        {
+          "MS_NAME": "PVR",
+          "COLOR": "#D4854B",
+          "ICON": "diamond",
+          "DESCRIPTION": "Product Validation Review"
+        },
+        {
+          "MS_NAME": "PRA",
+          "COLOR": "#94a3b8",
+          "ICON": "circle",
+          "DESCRIPTION": "Production Readiness Approval"
+        },
+        {
+          "MS_NAME": "SRA (CQ)",
+          "COLOR": "#B5454F",
+          "ICON": "star",
+          "DESCRIPTION": "Sales Release Approval (Customer Qualification)"
+        },
+        {
+          "MS_NAME": "SV",
+          "COLOR": "#94a3b8",
+          "ICON": "circle",
+          "DESCRIPTION": "Soft Verify (간략)"
+        },
+        {
+          "MS_NAME": "HV",
+          "COLOR": "#94a3b8",
+          "ICON": "circle",
+          "DESCRIPTION": "Hard Verify (간략)"
+        }
+      ]
+    },
+    "lane_style": {
+      "_note": "선택. 없으면 팔레트에서 자동 할당.",
+      "columns": [
+        "MAST_CODE",
+        "COLOR",
+        "BG"
+      ],
+      "rows": []
+    }
+  },
+  "recipe_configs": [
+    {
+      "recipe_id": "display-full-view",
+      "title": "Display Driver IC Roadmap",
+      "time_range": {
+        "start": "2026-01-01",
+        "end": "2031-12-31"
+      },
+      "today": "2026-05-15",
+      "master_table": "display_products",
+      "field_mapping": {
+        "mast_code": "MAST_CODE",
+        "label": "MAST_CODE",
+        "comment_field": "Application",
+        "lineup_field": "PG4",
+        "super_lineup_field": "PG5",
+        "detailed_ms_1": "K/O",
+        "detailed_ms_2": "MTO",
+        "brief_ms_1": "FS",
+        "detailed_ms_3": "PVR",
+        "brief_ms_2": "PRA",
+        "detailed_ms_4": "SRA (CQ)",
+        "brief_ms_3": "SV",
+        "brief_ms_4": "HV"
+      },
+      "milestone_style_source": "milestone_style",
+      "lineup_labels": {
+        "LCD": {
+          "label": "LCD Lineup",
+          "color": "#1e293b"
+        },
+        "OLED": {
+          "label": "OLED Lineup",
+          "color": "#1e293b"
+        },
+        "MICRO-LED": {
+          "label": "Micro-LED Lineup",
+          "color": "#1e293b"
+        }
+      },
+      "super_lineup_labels": {
+        "OTHERS": {
+          "label": "Mainstream",
+          "color": "#0f172a",
+          "description": "일반 라인업"
+        },
+        "PREMIUM": {
+          "label": "Premium",
+          "color": "#0f172a",
+          "description": "프리미엄 라인업"
+        },
+        "NEXT_GEN": {
+          "label": "Next-Gen",
+          "color": "#0f172a",
+          "description": "차세대 / R&D"
+        }
+      },
+      "filters": {
+        "include_codes": null,
+        "exclude_codes": []
+      },
+      "brief_pairs": [
+        {
+          "id": "pair-development",
+          "from_ms_field": "FS",
+          "to_ms_field": "PRA",
+          "label": "Development"
+        },
+        {
+          "id": "pair-verification",
+          "from_ms_field": "SV",
+          "to_ms_field": "HV",
+          "label": "Verification",
+          "color": "#7E5BB5"
+        }
+      ]
+    }
+  ]
+}

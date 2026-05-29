@@ -1,0 +1,352 @@
+{
+  "title": "Display Driver IC Roadmap",
+  "timeRange": {
+    "start": "2026-01-01",
+    "end": "2031-12-31"
+  },
+  "today": "2026-05-15",
+  "milestoneDefinitions": [
+    {
+      "id": "ko",
+      "label": "K/O",
+      "color": "#598B45",
+      "icon": "arrow",
+      "tier": "detailed",
+      "description": "Kick-off (개발 착수)"
+    },
+    {
+      "id": "mto",
+      "label": "MTO",
+      "color": "#3F6CA8",
+      "icon": "arrow",
+      "tier": "detailed",
+      "description": "Mask Tape-Out"
+    },
+    {
+      "id": "fs",
+      "label": "FS",
+      "color": "#94a3b8",
+      "icon": "circle",
+      "tier": "brief",
+      "description": "Feasibility Study"
+    },
+    {
+      "id": "pvr",
+      "label": "PVR",
+      "color": "#D4854B",
+      "icon": "diamond",
+      "tier": "detailed",
+      "description": "Product Validation Review"
+    },
+    {
+      "id": "pra",
+      "label": "PRA",
+      "color": "#94a3b8",
+      "icon": "circle",
+      "tier": "brief",
+      "description": "Production Readiness Approval"
+    },
+    {
+      "id": "sracq",
+      "label": "SRA (CQ)",
+      "color": "#B5454F",
+      "icon": "star",
+      "tier": "detailed",
+      "description": "Sales Release Approval (Customer Qualification)"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "s6abbcc-ko",
+      "definitionId": "ko",
+      "date": "2026-03-24",
+      "laneId": "S6ABBCC"
+    },
+    {
+      "id": "s6abbcc-mto",
+      "definitionId": "mto",
+      "date": "2026-04-01",
+      "laneId": "S6ABBCC"
+    },
+    {
+      "id": "s6abbcc-fs",
+      "definitionId": "fs",
+      "date": "2026-05-31",
+      "laneId": "S6ABBCC"
+    },
+    {
+      "id": "s6abbcc-pvr",
+      "definitionId": "pvr",
+      "date": "2026-08-31",
+      "laneId": "S6ABBCC"
+    },
+    {
+      "id": "s6abbcc-pra",
+      "definitionId": "pra",
+      "date": "2027-03-10",
+      "laneId": "S6ABBCC"
+    },
+    {
+      "id": "s6abbcc-sracq",
+      "definitionId": "sracq",
+      "date": "2027-05-10",
+      "laneId": "S6ABBCC"
+    },
+    {
+      "id": "s6abbdd-ko",
+      "definitionId": "ko",
+      "date": "2026-09-01",
+      "laneId": "S6ABBDD"
+    },
+    {
+      "id": "s6abbdd-mto",
+      "definitionId": "mto",
+      "date": "2026-10-15",
+      "laneId": "S6ABBDD"
+    },
+    {
+      "id": "s6abbdd-fs",
+      "definitionId": "fs",
+      "date": "2026-12-31",
+      "laneId": "S6ABBDD"
+    },
+    {
+      "id": "s6abbdd-pvr",
+      "definitionId": "pvr",
+      "date": "2027-04-30",
+      "laneId": "S6ABBDD"
+    },
+    {
+      "id": "s6abbdd-pra",
+      "definitionId": "pra",
+      "date": "2027-09-30",
+      "laneId": "S6ABBDD"
+    },
+    {
+      "id": "s6abbdd-sracq",
+      "definitionId": "sracq",
+      "date": "2027-12-01",
+      "laneId": "S6ABBDD"
+    },
+    {
+      "id": "s6abbee-ko",
+      "definitionId": "ko",
+      "date": "2027-02-01",
+      "laneId": "S6ABBEE"
+    },
+    {
+      "id": "s6abbee-mto",
+      "definitionId": "mto",
+      "date": "2027-03-15",
+      "laneId": "S6ABBEE"
+    },
+    {
+      "id": "s6abbee-fs",
+      "definitionId": "fs",
+      "date": "2027-06-30",
+      "laneId": "S6ABBEE"
+    },
+    {
+      "id": "s6abbee-pvr",
+      "definitionId": "pvr",
+      "date": "2027-10-31",
+      "laneId": "S6ABBEE"
+    },
+    {
+      "id": "s6abbee-pra",
+      "definitionId": "pra",
+      "date": "2028-04-30",
+      "laneId": "S6ABBEE"
+    },
+    {
+      "id": "s6abbee-sracq",
+      "definitionId": "sracq",
+      "date": "2028-07-15",
+      "laneId": "S6ABBEE"
+    },
+    {
+      "id": "s6abbff-ko",
+      "definitionId": "ko",
+      "date": "2028-08-01",
+      "laneId": "S6ABBFF"
+    },
+    {
+      "id": "s6abbff-mto",
+      "definitionId": "mto",
+      "date": "2028-09-15",
+      "laneId": "S6ABBFF"
+    },
+    {
+      "id": "s6abbff-fs",
+      "definitionId": "fs",
+      "date": "2028-12-31",
+      "laneId": "S6ABBFF"
+    },
+    {
+      "id": "s6abbff-pvr",
+      "definitionId": "pvr",
+      "date": "2029-05-31",
+      "laneId": "S6ABBFF"
+    },
+    {
+      "id": "s6abbff-pra",
+      "definitionId": "pra",
+      "date": "2029-11-30",
+      "laneId": "S6ABBFF"
+    },
+    {
+      "id": "s6abbff-sracq",
+      "definitionId": "sracq",
+      "date": "2030-02-15",
+      "laneId": "S6ABBFF"
+    },
+    {
+      "id": "s6abbgg-ko",
+      "definitionId": "ko",
+      "date": "2029-01-01",
+      "laneId": "S6ABBGG"
+    },
+    {
+      "id": "s6abbgg-mto",
+      "definitionId": "mto",
+      "date": "2029-03-01",
+      "laneId": "S6ABBGG"
+    },
+    {
+      "id": "s6abbgg-fs",
+      "definitionId": "fs",
+      "date": "2029-09-30",
+      "laneId": "S6ABBGG"
+    },
+    {
+      "id": "s6abbgg-pvr",
+      "definitionId": "pvr",
+      "date": "2030-03-31",
+      "laneId": "S6ABBGG"
+    },
+    {
+      "id": "s6abbgg-pra",
+      "definitionId": "pra",
+      "date": "2030-12-31",
+      "laneId": "S6ABBGG"
+    },
+    {
+      "id": "s6abbgg-sracq",
+      "definitionId": "sracq",
+      "date": "2031-06-30",
+      "laneId": "S6ABBGG"
+    }
+  ],
+  "briefPairs": [
+    {
+      "fromDefinitionId": "fs",
+      "toDefinitionId": "pra",
+      "label": "Development",
+      "id": "pair-development"
+    }
+  ],
+  "laneSuperGroups": [
+    {
+      "id": "super-mainstream",
+      "label": "Mainstream",
+      "color": "#0f172a",
+      "description": "일반 라인업 (양산/개발)",
+      "groupIds": [
+        "lineup-mainstream-lcd",
+        "lineup-mainstream-oled"
+      ]
+    },
+    {
+      "id": "super-nextgen",
+      "label": "Next-Gen",
+      "color": "#0f172a",
+      "description": "차세대 / R&D",
+      "groupIds": [
+        "lineup-nextgen-microled"
+      ]
+    }
+  ],
+  "laneGroups": [
+    {
+      "id": "lineup-mainstream-lcd",
+      "label": "LCD Lineup",
+      "color": "#1e293b",
+      "description": "LCD 라인업",
+      "laneIds": [
+        "S6ABBCC",
+        "S6ABBDD"
+      ]
+    },
+    {
+      "id": "lineup-mainstream-oled",
+      "label": "OLED Lineup",
+      "color": "#1e293b",
+      "description": "OLED 라인업",
+      "laneIds": [
+        "S6ABBEE",
+        "S6ABBFF"
+      ]
+    },
+    {
+      "id": "lineup-nextgen-microled",
+      "label": "Micro-LED Lineup",
+      "color": "#1e293b",
+      "description": "Micro-LED 라인업",
+      "laneIds": [
+        "S6ABBGG"
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "S6ABBCC",
+      "label": "S6ABBCC",
+      "color": "#3F6CA8",
+      "bg": "#E5ECF5",
+      "comment": "LCD",
+      "description": "HD, eD, Rx, CSSP Tx, VR, CC, CBC",
+      "owner": "SEGH",
+      "tasks": []
+    },
+    {
+      "id": "S6ABBDD",
+      "label": "S6ABBDD",
+      "color": "#598B45",
+      "bg": "#E5EFDF",
+      "comment": "LCD",
+      "description": "보급형 라인업",
+      "owner": "SEGH",
+      "tasks": []
+    },
+    {
+      "id": "S6ABBEE",
+      "label": "S6ABBEE",
+      "color": "#D4854B",
+      "bg": "#FBEDDE",
+      "comment": "OLED",
+      "description": "프리미엄 모바일",
+      "owner": "SEGH",
+      "tasks": []
+    },
+    {
+      "id": "S6ABBFF",
+      "label": "S6ABBFF",
+      "color": "#7E5BB5",
+      "bg": "#EDE5F5",
+      "comment": "OLED",
+      "description": "타블릿 라인업",
+      "owner": "SEGH",
+      "tasks": []
+    },
+    {
+      "id": "S6ABBGG",
+      "label": "S6ABBGG",
+      "color": "#3A8A8A",
+      "bg": "#DCEEEE",
+      "comment": "Micro-LED",
+      "description": "Micro-LED 선행",
+      "owner": "SEGH",
+      "tasks": []
+    }
+  ]
+}

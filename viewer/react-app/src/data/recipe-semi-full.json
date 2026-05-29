@@ -1,0 +1,84 @@
+{
+  "title": "Memory Product Roadmap (10Y)",
+  "timeRange": { "start": "2025-01-01", "end": "2034-12-31" },
+  "today": "2026-05-01",
+
+  "milestoneDefinitions": [
+    { "id": "ko",  "label": "K/O",      "color": "#598B45", "icon": "arrow",   "tier": "detailed", "description": "Kick-off (개발 착수)" },
+    { "id": "pvr", "label": "PVR",      "color": "#D4854B", "icon": "diamond", "tier": "detailed", "description": "Product Validation Review" },
+    { "id": "sra", "label": "SRA (CQ)", "color": "#B5454F", "icon": "star",    "tier": "detailed", "description": "Sales Release Approval (Customer Qualification)" },
+    { "id": "fs",  "label": "FS",       "color": "#94a3b8", "icon": "circle",  "tier": "brief",    "description": "Feasibility Study" },
+    { "id": "pra", "label": "PRA",      "color": "#94a3b8", "icon": "circle",  "tier": "brief",    "description": "Production Readiness Approval" }
+  ],
+
+  "milestones": [
+    { "id": "a-ko",  "definitionId": "ko",  "date": "2024-12-01", "laneId": "prodA" },
+    { "id": "a-fs",  "definitionId": "fs",  "date": "2025-03-15", "laneId": "prodA" },
+    { "id": "a-pvr", "definitionId": "pvr", "date": "2025-06-15", "laneId": "prodA" },
+    { "id": "a-pra", "definitionId": "pra", "date": "2025-09-30", "laneId": "prodA" },
+    { "id": "a-sra", "definitionId": "sra", "date": "2026-04-15", "laneId": "prodA" },
+
+    { "id": "b-ko",  "definitionId": "ko",  "date": "2026-03-01", "laneId": "prodB" },
+    { "id": "b-fs",  "definitionId": "fs",  "date": "2026-09-15", "laneId": "prodB" },
+    { "id": "b-pvr", "definitionId": "pvr", "date": "2027-04-01", "laneId": "prodB" },
+    { "id": "b-pra", "definitionId": "pra", "date": "2027-11-15", "laneId": "prodB" },
+    { "id": "b-sra", "definitionId": "sra", "date": "2028-06-01", "laneId": "prodB" },
+
+    { "id": "c-ko",  "definitionId": "ko",  "date": "2028-06-01", "laneId": "prodC" },
+    { "id": "c-pvr", "definitionId": "pvr", "date": "2029-09-01", "laneId": "prodC" },
+    { "id": "c-sra", "definitionId": "sra", "date": "2031-12-01", "laneId": "prodC" },
+
+    { "id": "d-ko",  "definitionId": "ko",  "date": "2030-06-01", "laneId": "prodD" },
+    { "id": "d-pvr", "definitionId": "pvr", "date": "2032-06-01", "laneId": "prodD" },
+    { "id": "d-sra", "definitionId": "sra", "date": "2034-06-01", "laneId": "prodD" }
+  ],
+
+  "laneGroups": [
+    { "id": "in-prod", "label": "In Production",  "color": "#1e293b", "description": "양산 중인 제품 라인업", "laneIds": ["prodA", "prodB"] },
+    { "id": "in-dev",  "label": "In Development", "color": "#1e293b", "description": "개발 중 / 차세대 제품", "laneIds": ["prodC", "prodD"] }
+  ],
+
+  "lanes": [
+    {
+      "id": "prodA", "label": "Product A", "color": "#3F6CA8", "bg": "#E5ECF5",
+      "description": "Gen1 메모리 제품", "owner": "BU1",
+      "tasks": [
+        { "id": "a-def",    "name": "Definition",      "start": "2025-01-01", "end": "2025-03-31", "detail": { "status": "completed",   "progress": 100, "owner": "BU1" } },
+        { "id": "a-design", "name": "Design",          "start": "2025-02-01", "end": "2025-06-15", "detail": { "status": "completed",   "progress": 100, "owner": "BU1" } },
+        { "id": "a-val",    "name": "Validation",      "start": "2025-12-01", "end": "2026-09-30", "detail": { "status": "in_progress", "progress": 55,  "owner": "BU1" } },
+        { "id": "a-ramp",   "name": "Production Ramp", "start": "2027-01-15", "end": "2029-12-31", "detail": { "status": "planned",     "progress": 0,   "owner": "BU1" } }
+      ]
+    },
+    {
+      "id": "prodB", "label": "Product B", "color": "#598B45", "bg": "#E5EFDF",
+      "description": "Gen2 메모리 제품 (Product A 후속)", "owner": "BU1",
+      "tasks": [
+        { "id": "b-def",    "name": "Definition",      "start": "2026-03-01", "end": "2026-09-30", "detail": { "status": "planned", "progress": 0, "owner": "BU1" } },
+        { "id": "b-design", "name": "Design",          "start": "2026-06-01", "end": "2027-04-01", "detail": { "status": "planned", "progress": 0, "owner": "BU1" } },
+        { "id": "b-val",    "name": "Validation",      "start": "2027-11-01", "end": "2029-05-31", "detail": { "status": "planned", "progress": 0, "owner": "BU1" } },
+        { "id": "b-ramp",   "name": "Production Ramp", "start": "2029-06-01", "end": "2032-12-31", "detail": { "status": "planned", "progress": 0, "owner": "BU1" } }
+      ]
+    },
+    {
+      "id": "prodC", "label": "Product C", "color": "#D4854B", "bg": "#FBEDDE",
+      "description": "Gen3 메모리 제품", "owner": "BU2",
+      "tasks": [
+        { "id": "c-def",    "name": "Definition",      "start": "2028-06-01", "end": "2029-03-31", "detail": { "status": "planned", "progress": 0, "owner": "BU2" } },
+        { "id": "c-design", "name": "Design",          "start": "2028-12-01", "end": "2029-09-01", "detail": { "status": "planned", "progress": 0, "owner": "BU2" } },
+        { "id": "c-val",    "name": "Validation",      "start": "2029-09-01", "end": "2031-11-30", "detail": { "status": "planned", "progress": 0, "owner": "BU2" } },
+        { "id": "c-ramp",   "name": "Production Ramp", "start": "2031-12-01", "end": "2034-12-31", "detail": { "status": "planned", "progress": 0, "owner": "BU2" } }
+      ]
+    },
+    {
+      "id": "prodD", "label": "Product D", "color": "#7E5BB5", "bg": "#EDE5F5",
+      "description": "Next-gen R&D 트랙", "owner": "R&D",
+      "tasks": [
+        { "id": "d-rnd",    "name": "Research",        "start": "2030-01-01", "end": "2031-06-30", "detail": { "status": "planned", "progress": 0, "owner": "R&D" } },
+        { "id": "d-def",    "name": "Definition",      "start": "2030-06-01", "end": "2031-12-31", "detail": { "status": "planned", "progress": 0, "owner": "R&D" } },
+        { "id": "d-design", "name": "Design",          "start": "2031-06-01", "end": "2032-06-01", "detail": { "status": "planned", "progress": 0, "owner": "R&D" } },
+        { "id": "d-val",    "name": "Validation",      "start": "2032-06-01", "end": "2034-05-31", "detail": { "status": "planned", "progress": 0, "owner": "R&D" } },
+        { "id": "d-ramp",   "name": "Production Ramp", "start": "2034-06-01", "end": "2034-12-31", "detail": { "status": "planned", "progress": 0, "owner": "R&D" } }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,353 @@
+{
+  "title": "Display IC Roadmap (Grouped by Lineup)",
+  "timeRange": {
+    "start": "2026-01-01",
+    "end": "2031-12-31"
+  },
+  "today": "2026-05-15",
+  "milestoneDefinitions": [
+    {
+      "id": "ko",
+      "label": "K/O",
+      "color": "#598B45",
+      "icon": "arrow",
+      "tier": "detailed",
+      "description": "Kick-off (개발 착수)"
+    },
+    {
+      "id": "mto",
+      "label": "MTO",
+      "color": "#3F6CA8",
+      "icon": "arrow",
+      "tier": "detailed",
+      "description": "Mask Tape-Out"
+    },
+    {
+      "id": "fs",
+      "label": "FS",
+      "color": "#94a3b8",
+      "icon": "circle",
+      "tier": "brief",
+      "description": "Feasibility Study"
+    },
+    {
+      "id": "pvr",
+      "label": "PVR",
+      "color": "#D4854B",
+      "icon": "diamond",
+      "tier": "detailed",
+      "description": "Product Validation Review"
+    },
+    {
+      "id": "pra",
+      "label": "PRA",
+      "color": "#94a3b8",
+      "icon": "circle",
+      "tier": "brief",
+      "description": "Production Readiness Approval"
+    },
+    {
+      "id": "sracq",
+      "label": "SRA (CQ)",
+      "color": "#B5454F",
+      "icon": "star",
+      "tier": "detailed",
+      "description": "Sales Release Approval (Customer Qualification)"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "lane-lcd/s6abbcc-ko",
+      "definitionId": "ko",
+      "date": "2026-03-24",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbcc"
+    },
+    {
+      "id": "lane-lcd/s6abbcc-mto",
+      "definitionId": "mto",
+      "date": "2026-04-01",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbcc"
+    },
+    {
+      "id": "lane-lcd/s6abbcc-fs",
+      "definitionId": "fs",
+      "date": "2026-05-31",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbcc"
+    },
+    {
+      "id": "lane-lcd/s6abbcc-pvr",
+      "definitionId": "pvr",
+      "date": "2026-08-31",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbcc"
+    },
+    {
+      "id": "lane-lcd/s6abbcc-pra",
+      "definitionId": "pra",
+      "date": "2027-03-10",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbcc"
+    },
+    {
+      "id": "lane-lcd/s6abbcc-sracq",
+      "definitionId": "sracq",
+      "date": "2027-05-10",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbcc"
+    },
+    {
+      "id": "lane-lcd/s6abbdd-ko",
+      "definitionId": "ko",
+      "date": "2026-09-01",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbdd"
+    },
+    {
+      "id": "lane-lcd/s6abbdd-mto",
+      "definitionId": "mto",
+      "date": "2026-10-15",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbdd"
+    },
+    {
+      "id": "lane-lcd/s6abbdd-fs",
+      "definitionId": "fs",
+      "date": "2026-12-31",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbdd"
+    },
+    {
+      "id": "lane-lcd/s6abbdd-pvr",
+      "definitionId": "pvr",
+      "date": "2027-04-30",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbdd"
+    },
+    {
+      "id": "lane-lcd/s6abbdd-pra",
+      "definitionId": "pra",
+      "date": "2027-09-30",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbdd"
+    },
+    {
+      "id": "lane-lcd/s6abbdd-sracq",
+      "definitionId": "sracq",
+      "date": "2027-12-01",
+      "laneId": "lane-lcd",
+      "rowId": "lane-lcd/s6abbdd"
+    },
+    {
+      "id": "lane-oled/s6abbee-ko",
+      "definitionId": "ko",
+      "date": "2027-02-01",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbee"
+    },
+    {
+      "id": "lane-oled/s6abbee-mto",
+      "definitionId": "mto",
+      "date": "2027-03-15",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbee"
+    },
+    {
+      "id": "lane-oled/s6abbee-fs",
+      "definitionId": "fs",
+      "date": "2027-06-30",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbee"
+    },
+    {
+      "id": "lane-oled/s6abbee-pvr",
+      "definitionId": "pvr",
+      "date": "2027-10-31",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbee"
+    },
+    {
+      "id": "lane-oled/s6abbee-pra",
+      "definitionId": "pra",
+      "date": "2028-04-30",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbee"
+    },
+    {
+      "id": "lane-oled/s6abbee-sracq",
+      "definitionId": "sracq",
+      "date": "2028-07-15",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbee"
+    },
+    {
+      "id": "lane-oled/s6abbff-ko",
+      "definitionId": "ko",
+      "date": "2028-08-01",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbff"
+    },
+    {
+      "id": "lane-oled/s6abbff-mto",
+      "definitionId": "mto",
+      "date": "2028-09-15",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbff"
+    },
+    {
+      "id": "lane-oled/s6abbff-fs",
+      "definitionId": "fs",
+      "date": "2028-12-31",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbff"
+    },
+    {
+      "id": "lane-oled/s6abbff-pvr",
+      "definitionId": "pvr",
+      "date": "2029-05-31",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbff"
+    },
+    {
+      "id": "lane-oled/s6abbff-pra",
+      "definitionId": "pra",
+      "date": "2029-11-30",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbff"
+    },
+    {
+      "id": "lane-oled/s6abbff-sracq",
+      "definitionId": "sracq",
+      "date": "2030-02-15",
+      "laneId": "lane-oled",
+      "rowId": "lane-oled/s6abbff"
+    },
+    {
+      "id": "lane-microled/s6abbgg-ko",
+      "definitionId": "ko",
+      "date": "2029-01-01",
+      "laneId": "lane-microled",
+      "rowId": "lane-microled/s6abbgg"
+    },
+    {
+      "id": "lane-microled/s6abbgg-mto",
+      "definitionId": "mto",
+      "date": "2029-03-01",
+      "laneId": "lane-microled",
+      "rowId": "lane-microled/s6abbgg"
+    },
+    {
+      "id": "lane-microled/s6abbgg-fs",
+      "definitionId": "fs",
+      "date": "2029-09-30",
+      "laneId": "lane-microled",
+      "rowId": "lane-microled/s6abbgg"
+    },
+    {
+      "id": "lane-microled/s6abbgg-pvr",
+      "definitionId": "pvr",
+      "date": "2030-03-31",
+      "laneId": "lane-microled",
+      "rowId": "lane-microled/s6abbgg"
+    },
+    {
+      "id": "lane-microled/s6abbgg-pra",
+      "definitionId": "pra",
+      "date": "2030-12-31",
+      "laneId": "lane-microled",
+      "rowId": "lane-microled/s6abbgg"
+    },
+    {
+      "id": "lane-microled/s6abbgg-sracq",
+      "definitionId": "sracq",
+      "date": "2031-06-30",
+      "laneId": "lane-microled",
+      "rowId": "lane-microled/s6abbgg"
+    }
+  ],
+  "briefPairs": [
+    {
+      "fromDefinitionId": "fs",
+      "toDefinitionId": "pra",
+      "label": "Development",
+      "id": "pair-development"
+    }
+  ],
+  "laneSuperGroups": [
+    {
+      "id": "super-mainstream",
+      "label": "Mainstream",
+      "color": "#0f172a",
+      "description": "일반 라인업 (양산/개발)",
+      "groupIds": [
+        "lane-lcd",
+        "lane-oled"
+      ]
+    },
+    {
+      "id": "super-nextgen",
+      "label": "Next-Gen",
+      "color": "#0f172a",
+      "description": "차세대 / R&D",
+      "groupIds": [
+        "lane-microled"
+      ]
+    }
+  ],
+  "lanes": [
+    {
+      "id": "lane-lcd",
+      "label": "LCD",
+      "color": "#3F6CA8",
+      "bg": "#E5ECF5",
+      "description": "",
+      "rows": [
+        {
+          "id": "lane-lcd/s6abbcc",
+          "label": "S6ABBCC",
+          "comment": "LCD"
+        },
+        {
+          "id": "lane-lcd/s6abbdd",
+          "label": "S6ABBDD",
+          "comment": "LCD"
+        }
+      ]
+    },
+    {
+      "id": "lane-oled",
+      "label": "OLED",
+      "color": "#598B45",
+      "bg": "#E5EFDF",
+      "description": "",
+      "rows": [
+        {
+          "id": "lane-oled/s6abbee",
+          "label": "S6ABBEE",
+          "comment": "OLED"
+        },
+        {
+          "id": "lane-oled/s6abbff",
+          "label": "S6ABBFF",
+          "comment": "OLED"
+        }
+      ]
+    },
+    {
+      "id": "lane-microled",
+      "label": "Micro-LED",
+      "color": "#D4854B",
+      "bg": "#FBEDDE",
+      "description": "",
+      "rows": [
+        {
+          "id": "lane-microled/s6abbgg",
+          "label": "S6ABBGG",
+          "comment": "Micro-LED"
+        }
+      ]
+    }
+  ]
+}

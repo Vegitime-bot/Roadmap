@@ -1,0 +1,33 @@
+{
+  "title": "Product A — Validation Year (1Y)",
+  "timeRange": { "start": "2025-12-01", "end": "2027-01-31" },
+  "today": "2026-05-01",
+
+  "milestoneDefinitions": [
+    { "id": "ko",  "label": "K/O",      "color": "#598B45", "icon": "arrow",   "tier": "detailed", "description": "Kick-off" },
+    { "id": "pvr", "label": "PVR",      "color": "#D4854B", "icon": "diamond", "tier": "detailed", "description": "Product Validation Review" },
+    { "id": "sra", "label": "SRA (CQ)", "color": "#B5454F", "icon": "star",    "tier": "detailed", "description": "Sales Release Approval" },
+    { "id": "pra", "label": "PRA",      "color": "#94a3b8", "icon": "circle",  "tier": "brief",    "description": "Production Readiness Approval" }
+  ],
+
+  "milestones": [
+    { "id": "v-pvr", "definitionId": "pvr", "date": "2026-02-15", "laneId": "prodA" },
+    { "id": "v-pra", "definitionId": "pra", "date": "2026-08-30", "laneId": "prodA" },
+    { "id": "v-sra", "definitionId": "sra", "date": "2026-11-15", "laneId": "prodA" }
+  ],
+
+  "lanes": [
+    {
+      "id": "prodA", "label": "Product A", "color": "#3F6CA8", "bg": "#E5ECF5",
+      "description": "Validation phase 집중 뷰",
+      "owner": "BU1",
+      "tasks": [
+        { "id": "val-1",  "name": "Initial Validation",  "start": "2025-12-01", "end": "2026-02-15", "detail": { "status": "in_progress", "progress": 80, "owner": "BU1" } },
+        { "id": "val-2",  "name": "Yield Improvement",   "start": "2026-02-16", "end": "2026-06-30", "detail": { "status": "in_progress", "progress": 30, "owner": "BU1" } },
+        { "id": "val-3",  "name": "Customer Sampling",   "start": "2026-04-01", "end": "2026-08-30", "detail": { "status": "planned", "progress": 0, "owner": "BU1" } },
+        { "id": "val-4",  "name": "Quality Sign-off",    "start": "2026-09-01", "end": "2026-11-15", "detail": { "status": "planned", "progress": 0, "owner": "BU1" } },
+        { "id": "ramp",   "name": "Production Ramp",     "start": "2026-11-15", "end": "2027-01-31", "detail": { "status": "planned", "progress": 0, "owner": "BU1" } }
+      ]
+    }
+  ]
+}
