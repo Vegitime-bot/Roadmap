@@ -1,28 +1,28 @@
-import { LANE_MS_ROW_H } from './constants';
-
-// Extra height when range bars stack vertically (more than one bar
-// overlaps in time within the same lane).
-const EXTRA_PER_EXTRA_BAR = 22;
+// Each bar sublane: bar height + gap + optional milestone area below
+const BAR_H = 18;
+const BAR_GAP = 3;
+const MS_AREA_H = 46; // milestone icons + labels below each bar row
 
 /**
  * Lane vertical layout.
  *
- * Both single-row and multi-row authoring modes share the same visual
- * shape: one lane = one track. The track has range bars at one
- * vertical region and milestone points at another, but it's all one
- * "row" visually.
- *
- * `maxBarCount` is the max number of range bars that could ever
- * coexist on this lane (sum across rows in multi-row mode). The lane
- * reserves a bit of extra height for vertical bar stacking.
+ * Milestones are rendered directly below each range bar (same visual
+ * row), so the lane height scales with the number of bar sublanes and
+ * whether the lane has milestones.
  */
 export function computeLaneLayout(_lane, laneMilestonesCount = 0, maxBarCount = 0) {
-  const BASE = laneMilestonesCount > 0 ? LANE_MS_ROW_H : 44;
-  const extraStackRoom = Math.max(0, maxBarCount - 1) * EXTRA_PER_EXTRA_BAR;
-  const msAreaH = BASE + extraStackRoom;
+  const hasMilestones = laneMilestonesCount > 0;
+
+  if (maxBarCount === 0) {
+    // No bars: minimal height (milestones won't render in this case)
+    return { mode: 'single', msAreaH: 44, totalH: 44 };
+  }
+
+  const perRow = BAR_H + BAR_GAP + (hasMilestones ? MS_AREA_H : 0);
+  const totalH = Math.max(44, 12 + maxBarCount * perRow);
   return {
     mode: 'single',
-    msAreaH,
-    totalH: msAreaH,
+    msAreaH: totalH,
+    totalH,
   };
 }

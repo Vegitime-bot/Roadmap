@@ -1,5 +1,7 @@
 import { LANE_HEADER_W } from '../utils/constants';
 import { fmtShort } from '../utils/dates';
+import { resolveMilestoneStyle } from '../utils/milestones';
+import { MilestoneIcon } from './MilestoneLayer';
 
 /**
  * One lane. Renders background tint, left-side label box, and any range
@@ -25,6 +27,10 @@ export function LaneRow({
   briefPairs,
   briefMilestonesByLane,
   briefMilestonesByRow,
+  detailedMilestones,
+  detailedMilestonesByRow,
+  definitions,
+  onHover,
   hoveredOwner, onHoverOwner,
 }) {
   const bars = computeAllBars(lane, briefPairs, briefMilestonesByLane, briefMilestonesByRow, dateToX);
@@ -39,17 +45,21 @@ export function LaneRow({
         opacity={0.55}
       />
 
-      {/* range bars */}
+      {/* range bars + milestones below each bar */}
       {bars.length > 0 && (
         <RangeBarStack
           bars={bars}
           top={top}
-          areaH={layout.totalH}
           selected={selected}
           onSelect={onSelect}
           lane={lane}
           hoveredOwner={hoveredOwner}
           onHoverOwner={onHoverOwner}
+          detailedMilestones={detailedMilestones}
+          detailedMilestonesByRow={detailedMilestonesByRow}
+          definitions={definitions}
+          dateToX={dateToX}
+          onHover={onHover}
         />
       )}
     </>
@@ -179,34 +189,27 @@ function packBarsVertically(bars) {
   return { assign, sublanes: ends.length };
 }
 
-function RangeBarStack({ bars, top, areaH, selected, onSelect, lane, hoveredOwner, onHoverOwner }) {
-  const { assign, sublanes } = packBarsVertically(bars);
-  const BAR_MAX_H = 18;
-  const GAP = 3;
-  // Range bars occupy the upper ~35% of the lane; milestone points
-  // occupy the lower ~65% (handled by LaneMilestoneStrip). This
-  // produces the interleaved layout: bar line above, milestone line
-  // below.
-  const barAreaH = Math.max(BAR_MAX_H + 4, Math.round(areaH * 0.4));
-  const usableH = barAreaH - 6;
-  const need = sublanes * BAR_MAX_H + (sublanes - 1) * GAP;
-  const barH = need <= usableH
-    ? BAR_MAX_H
-    : Math.max(8, Math.floor((usableH - (sublanes - 1) * GAP) / sublanes));
-  const stackH = barH * sublanes + GAP * Math.max(0, sublanes - 1);
-  const startY = top + 6 + (barAreaH - 6 - stackH) / 2;
+const BAR_H = 18;
+const BAR_GAP = 3;
+const MS_AREA_H = 46; // space below each bar for milestone icons + labels
+
+function RangeBarStack({
+  bars, top, selected, onSelect, lane, hoveredOwner, onHoverOwner,
+  detailedMilestones, detailedMilestonesByRow, definitions, dateToX, onHover,
+}) {
+  const { assign } = packBarsVertically(bars);
+  const hasMilestones = detailedMilestones?.length > 0;
+  const perRow = BAR_H + BAR_GAP + (hasMilestones ? MS_AREA_H : 0);
+  const startY = top + 6;
 
   return (
     <g>
       {bars.map((bar, i) => {
         const idx = assign[i];
-        const y = startY + idx * (barH + GAP);
+        const barY = startY + idx * perRow;
         const isSelected = selected?.kind === 'briefRange'
           && selected?.data.ownerKey === bar.ownerKey
           && selected?.data.pairId === bar.pairId;
-        // Determine hover state: a bar is "matched" when the hovered
-        // owner matches its row (or lane in single-row mode). When some
-        // OTHER owner is hovered, this bar is "dimmed".
         const ownerMatch = hoveredOwner && (
           hoveredOwner.id === bar.ownerKey ||
           (hoveredOwner.kind === 'lane' && hoveredOwner.id === lane.id)
@@ -214,35 +217,88 @@ function RangeBarStack({ bars, top, areaH, selected, onSelect, lane, hoveredOwne
         const isDimmed = hoveredOwner && !ownerMatch;
         const isHighlighted = Boolean(ownerMatch);
 
+        // Milestones belonging to this bar's owner
+        const barMilestones = bar.rowId
+          ? (detailedMilestonesByRow?.[bar.rowId] || [])
+          : (detailedMilestones || []);
+        const msBaseY = barY + BAR_H + 5;
+
         return (
-          <RangeBar
-            key={`${bar.ownerKey}-${bar.pairId}`}
-            bar={bar} y={y} h={barH}
-            isSelected={isSelected}
-            isDimmed={isDimmed}
-            isHighlighted={isHighlighted}
-            onMouseEnter={() => onHoverOwner?.({
-              kind: bar.rowId ? 'row' : 'lane',
-              id: bar.ownerKey,
-              laneId: lane.id,
-            })}
-            onMouseLeave={() => onHoverOwner?.(null)}
-            onClick={() => onSelect({
-              kind: 'briefRange',
-              data: {
-                ownerKey: bar.ownerKey,
-                pairId: bar.pairId,
-                label: bar.label,
-                fromDate: bar.fromDate,
-                toDate: bar.toDate,
-                rowId: bar.rowId,
-                rowLabel: bar.rowLabel,
+          <g key={`${bar.ownerKey}-${bar.pairId}`}>
+            <RangeBar
+              bar={bar} y={barY} h={BAR_H}
+              isSelected={isSelected}
+              isDimmed={isDimmed}
+              isHighlighted={isHighlighted}
+              onMouseEnter={() => onHoverOwner?.({
+                kind: bar.rowId ? 'row' : 'lane',
+                id: bar.ownerKey,
                 laneId: lane.id,
-              },
-              row: bar.row,
-              lane,
+              })}
+              onMouseLeave={() => onHoverOwner?.(null)}
+              onClick={() => onSelect({
+                kind: 'briefRange',
+                data: {
+                  ownerKey: bar.ownerKey,
+                  pairId: bar.pairId,
+                  label: bar.label,
+                  fromDate: bar.fromDate,
+                  toDate: bar.toDate,
+                  rowId: bar.rowId,
+                  rowLabel: bar.rowLabel,
+                  laneId: lane.id,
+                },
+                row: bar.row,
+                lane,
+              })}
+            />
+            {hasMilestones && barMilestones.map((ms, j) => {
+              const style = resolveMilestoneStyle(ms, definitions);
+              if (style.tier === 'brief') return null;
+              const displayName = ms.name || style.label || 'Milestone';
+              const x = dateToX(ms.date);
+              // Slight vertical stagger for milestones that may overlap in x
+              const stagger = (j % 2) * 14;
+              const iconY = msBaseY + 6 + stagger;
+              const labelY = iconY + 9;
+              const dateY = labelY + 12;
+              const isMsSelected = selected?.kind === 'milestone' && selected?.data.id === ms.id;
+              const opacity = isDimmed ? 0.3 : 1;
+              return (
+                <g
+                  key={ms.id}
+                  className="cursor-pointer"
+                  opacity={opacity}
+                  onClick={() => onSelect({ kind: 'milestone', data: ms, style, lane })}
+                  onMouseEnter={() => onHover?.({ x, y: iconY - 8, label: `${displayName} · ${fmtShort(ms.date)}` })}
+                  onMouseLeave={() => onHover?.(null)}
+                >
+                  <MilestoneIcon
+                    icon={style.icon}
+                    x={x} y={iconY}
+                    color={style.color}
+                    isSelected={isMsSelected}
+                  />
+                  <text
+                    x={x} y={labelY}
+                    textAnchor="middle" dominantBaseline="hanging"
+                    fontSize={10.5} fontWeight={700} fill="#1e293b"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {displayName}
+                  </text>
+                  <text
+                    x={x} y={dateY}
+                    textAnchor="middle" dominantBaseline="hanging"
+                    fontSize={9.5} fill="#64748b"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {fmtShort(ms.date)}
+                  </text>
+                </g>
+              );
             })}
-          />
+          </g>
         );
       })}
     </g>

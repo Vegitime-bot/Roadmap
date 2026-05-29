@@ -15,7 +15,7 @@ import { MilestoneLegend } from './MilestoneLegend';
 import { GroupHeader } from './GroupHeader';
 import { MonthBar } from './MonthBar';
 import { LaneRow, LaneLabel } from './LaneRow';
-import { GlobalMilestoneStrip, LaneMilestoneStrip } from './MilestoneLayer';
+import { GlobalMilestoneStrip } from './MilestoneLayer';
 import { DetailPanel } from './DetailPanel';
 
 /**
@@ -390,6 +390,10 @@ export function Roadmap({ recipe }) {
                 briefPairs={briefPairs}
                 briefMilestonesByLane={briefMilestonesByLane}
                 briefMilestonesByRow={briefMilestonesByRow}
+                detailedMilestones={showMilestones ? item.milestones : []}
+                detailedMilestonesByRow={detailedMilestonesByRow}
+                definitions={recipe.milestoneDefinitions}
+                onHover={setHovered}
                 hoveredOwner={hoveredOwner}
                 onHoverOwner={setHoveredOwner}
               />
@@ -419,29 +423,6 @@ export function Roadmap({ recipe }) {
             />
           )}
 
-          {/* Lane-scoped milestones. In multi-row mode, multiple instances
-              of the same definitionId may exist on a lane (one per row);
-              they all render as points on the lane's track. Row identity
-              is preserved in the milestone's rowId and surfaces in the
-              detail panel on click. */}
-          {showMilestones && layoutItems.map(item => {
-            if (item.kind !== 'lane') return null;
-            return (
-              <LaneMilestoneStrip
-                key={`lane-ms-${item.lane.id}`}
-                lane={item.lane}
-                layout={item.layout}
-                top={item.top}
-                milestones={item.milestones}
-                definitions={recipe.milestoneDefinitions}
-                dateToX={dateToX}
-                selected={selected}
-                onSelect={setSelected}
-                onHover={setHovered}
-                hoveredOwner={hoveredOwner}
-              />
-            );
-          })}
 
           {/* Today indicator */}
           {showToday && recipe.today && (() => {

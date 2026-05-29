@@ -134,7 +134,7 @@ export function LaneMilestoneStrip({
 }
 
 /** Single milestone icon dispatcher. */
-function MilestoneIcon({ icon, x, y, color, isSelected }) {
+export function MilestoneIcon({ icon, x, y, color, isSelected }) {
   if (icon === 'star') return <Star x={x} y={y} color={color} selected={isSelected} />;
   if (icon === 'diamond') return <Diamond x={x} y={y} color={color} selected={isSelected} />;
   if (icon === 'circle') {
