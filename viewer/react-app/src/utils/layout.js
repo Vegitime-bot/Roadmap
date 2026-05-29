@@ -1,7 +1,7 @@
 // Each bar sublane: bar height + gap + optional milestone area below
 const BAR_H = 18;
 const BAR_GAP = 3;
-const MS_AREA_H = 46; // milestone icons + labels below each bar row
+const MS_AREA_H = 36; // milestone icons + labels below each bar row (single row)
 
 /**
  * Lane vertical layout.

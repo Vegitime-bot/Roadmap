@@ -191,7 +191,7 @@ function packBarsVertically(bars) {
 
 const BAR_H = 18;
 const BAR_GAP = 3;
-const MS_AREA_H = 46; // space below each bar for milestone icons + labels
+const MS_AREA_H = 36; // space below each bar for milestone icons + labels (single row)
 
 function RangeBarStack({
   bars, top, selected, onSelect, lane, hoveredOwner, onHoverOwner,
@@ -257,9 +257,7 @@ function RangeBarStack({
               if (style.tier === 'brief') return null;
               const displayName = ms.name || style.label || 'Milestone';
               const x = dateToX(ms.date);
-              // Slight vertical stagger for milestones that may overlap in x
-              const stagger = (j % 2) * 14;
-              const iconY = msBaseY + 6 + stagger;
+              const iconY = msBaseY + 6;
               const labelY = iconY + 9;
               const dateY = labelY + 12;
               const isMsSelected = selected?.kind === 'milestone' && selected?.data.id === ms.id;
