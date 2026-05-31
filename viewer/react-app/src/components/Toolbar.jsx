@@ -1,16 +1,6 @@
-import { Filter, Eye, EyeOff, ZoomIn, ZoomOut, Minimize2, Edit3 } from 'lucide-react';
+import { Filter, Eye, EyeOff, ZoomIn, ZoomOut, Minimize2, Edit3, Download, PlusSquare } from 'lucide-react';
 import { ZOOM_MIN, ZOOM_MAX } from '../utils/constants';
 
-/**
- * Top control bar above the chart. Hosts:
- *   - lane visibility toggles (one chip per lane)
- *   - Milestones master toggle
- *   - Today line toggle
- *   - Zoom controls (-, %, +, reset)
- *
- * Brief milestones (the FS-PRA style range bars) are always rendered;
- * they're a structural part of the lane, not an opt-in overlay.
- */
 export function Toolbar({
   recipe,
   hiddenLanes, onToggleLane,
@@ -18,6 +8,8 @@ export function Toolbar({
   showToday, onToggleToday,
   zoom, onZoomIn, onZoomOut, onZoomReset,
   editMode, onToggleEditMode,
+  onAddLane,
+  onExportRecipe, onExportDB,
 }) {
   return (
     <div className="mb-4 bg-white rounded-xl border border-slate-200 p-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
@@ -65,8 +57,6 @@ export function Toolbar({
 
       <div className="h-5 w-px bg-slate-200" />
 
-      <div className="h-5 w-px bg-slate-200" />
-
       <label className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-lg transition font-medium ${
         editMode ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'text-slate-500 hover:bg-slate-100'
       }`}>
@@ -79,6 +69,35 @@ export function Toolbar({
         />
         편집 모드
       </label>
+
+      {/* Edit-mode actions */}
+      {editMode && (
+        <>
+          <div className="h-5 w-px bg-amber-200" />
+          <button
+            onClick={onAddLane}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 transition font-medium"
+          >
+            <PlusSquare size={13} />
+            Lane 추가
+          </button>
+          <div className="h-5 w-px bg-amber-200" />
+          <button
+            onClick={onExportRecipe}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition font-medium"
+          >
+            <Download size={12} />
+            Recipe 저장
+          </button>
+          <button
+            onClick={onExportDB}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition font-medium"
+          >
+            <Download size={12} />
+            DB 저장
+          </button>
+        </>
+      )}
 
       <div className="flex-1" />
 

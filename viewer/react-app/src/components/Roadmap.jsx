@@ -18,11 +18,14 @@ import { LaneRow, LaneLabel } from './LaneRow';
 import { GlobalMilestoneStrip } from './MilestoneLayer';
 import { DetailPanel } from './DetailPanel';
 
-/**
- * Interactive roadmap chart. Renders a Recipe object as an SVG with
- * lanes, lane groups, milestones (page-shared via `milestoneDefinitions`),
- * and a control toolbar for zooming, filtering, and toggling visibility.
- */
+function downloadJSON(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function Roadmap({ recipe }) {
   // ---------- selection / hover / filters ----------
   const [selected, setSelected] = useState(null);
@@ -36,10 +39,12 @@ export function Roadmap({ recipe }) {
 
   // ---------- edit mode ----------
   const [editMode, setEditMode] = useState(false);
-  // Mutable milestone list; reset when recipe prop changes
+  // Mutable copies of milestones + lanes; reset when recipe prop changes
   const [editMilestones, setEditMilestones] = useState(() => recipe.milestones || []);
+  const [editLanes, setEditLanes] = useState(() => JSON.parse(JSON.stringify(recipe.lanes)));
   useEffect(() => {
     setEditMilestones(recipe.milestones || []);
+    setEditLanes(JSON.parse(JSON.stringify(recipe.lanes)));
     setEditMode(false);
   }, [recipe]);
 
@@ -233,10 +238,59 @@ export function Roadmap({ recipe }) {
 
   const milestoneAreaH = globalMilestones.length > 0 ? GLOBAL_MS_AREA_H : TOP_PAD;
 
+  // ---------- add row / add lane ----------
+  const handleAddRow = useCallback((laneId) => {
+    const ts = Date.now();
+    const lane = editLanes.find(l => l.id === laneId);
+    if (!lane) return;
+    const newRowId = `row_${ts}`;
+    const newStartDate = recipe.timeRange.start;
+    const newEndDate = addDays(newStartDate, 30);
+    const isFirstRow = !Array.isArray(lane.rows) || lane.rows.length === 0;
+    const defaultRowId = isFirstRow ? `row_${ts - 1}` : null;
+
+    setEditLanes(prev => prev.map(l => {
+      if (l.id !== laneId) return l;
+      const newRow = { id: newRowId, label: 'New Row' };
+      if (isFirstRow) return { ...l, rows: [{ id: defaultRowId, label: l.label }, newRow] };
+      return { ...l, rows: [...l.rows, newRow] };
+    }));
+
+    setEditMilestones(prev => {
+      // When converting a single-row lane, assign existing unrowId'd milestones to the default row
+      const upgraded = isFirstRow && defaultRowId
+        ? prev.map(ms => ms.laneId === laneId && !ms.rowId ? { ...ms, rowId: defaultRowId } : ms)
+        : prev;
+      const newMs = briefPairs.flatMap((pair, i) => [
+        { id: `ms_${ts}_${i}a`, laneId, rowId: newRowId, definitionId: pair.fromDefinitionId, date: newStartDate },
+        { id: `ms_${ts}_${i}b`, laneId, rowId: newRowId, definitionId: pair.toDefinitionId, date: newEndDate },
+      ]);
+      return [...upgraded, ...newMs];
+    });
+  }, [editLanes, briefPairs, recipe.timeRange.start]);
+
+  const handleAddLane = useCallback(() => {
+    const ts = Date.now();
+    const laneId = `lane_${ts}`;
+    setEditLanes(prev => [...prev, {
+      id: laneId, label: 'New Lane', color: '#6366f1', bg: '#f5f3ff',
+    }]);
+  }, []);
+
+  // ---------- export ----------
+  const handleExportRecipe = useCallback(() => {
+    downloadJSON({ ...recipe, lanes: editLanes, milestones: editMilestones },
+      `${(recipe.title || 'recipe').replace(/\s+/g, '_')}.json`);
+  }, [recipe, editLanes, editMilestones]);
+
+  const handleExportDB = useCallback(() => {
+    downloadJSON(editMilestones, 'milestones-db.json');
+  }, [editMilestones]);
+
   // ---------- visible lanes & layout ----------
   const visibleLanes = useMemo(
-    () => recipe.lanes.filter(l => !hiddenLanes.has(l.id)),
-    [recipe.lanes, hiddenLanes]
+    () => editLanes.filter(l => !hiddenLanes.has(l.id)),
+    [editLanes, hiddenLanes]
   );
 
   // Chart left is now constant — lv2 groups render as horizontal header
@@ -463,6 +517,9 @@ export function Roadmap({ recipe }) {
         showToday={showToday} onToggleToday={setShowToday}
         zoom={zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onZoomReset={resetZoom}
         editMode={editMode} onToggleEditMode={setEditMode}
+        onAddLane={handleAddLane}
+        onExportRecipe={handleExportRecipe}
+        onExportDB={handleExportDB}
       />
 
       <MilestoneLegend
@@ -615,6 +672,8 @@ export function Roadmap({ recipe }) {
                   selected={selected}
                   onSelect={setSelected}
                   onHoverOwner={setHoveredOwner}
+                  editMode={editMode}
+                  onAddRow={handleAddRow}
                 />
               );
             })}

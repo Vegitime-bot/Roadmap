@@ -87,7 +87,7 @@ export function LaneRow({
  * it can be placed in a sticky `<g>` that translates with horizontal
  * scroll, keeping the lane header pinned to the left edge.
  */
-export function LaneLabel({ lane, layout, top, selected, onSelect, onHoverOwner }) {
+export function LaneLabel({ lane, layout, top, selected, onSelect, onHoverOwner, editMode, onAddRow }) {
   const labelBoxX = 6;
   const labelBoxY = top + 6;
   const labelBoxW = LANE_HEADER_W - 4;
@@ -95,34 +95,56 @@ export function LaneLabel({ lane, layout, top, selected, onSelect, onHoverOwner 
   const hasComment = Boolean(lane.comment);
   const labelCY = hasComment ? top + labelBoxH / 2 - 6 : top + layout.totalH / 2;
   const commentCY = labelCY + 16;
+  const plusCX = labelBoxX + labelBoxW - 9;
+  const plusCY = labelBoxY + labelBoxH - 9;
   return (
-    <g
-      className="cursor-pointer"
-      onClick={() => onSelect({ kind: 'lane', data: lane })}
-      onMouseEnter={() => onHoverOwner?.({ kind: 'lane', id: lane.id, laneId: lane.id })}
-      onMouseLeave={() => onHoverOwner?.(null)}
-    >
-      <rect
-        x={labelBoxX} y={labelBoxY}
-        width={labelBoxW} height={labelBoxH}
-        rx={5} fill={lane.color}
-      />
-      <text
-        x={labelBoxX + labelBoxW / 2} y={labelCY}
-        textAnchor="middle" dominantBaseline="middle"
-        fill="white" fontSize={13} fontWeight={600}
-        letterSpacing="0.02em"
+    <g>
+      <g
+        className="cursor-pointer"
+        onClick={() => onSelect({ kind: 'lane', data: lane })}
+        onMouseEnter={() => onHoverOwner?.({ kind: 'lane', id: lane.id, laneId: lane.id })}
+        onMouseLeave={() => onHoverOwner?.(null)}
       >
-        {lane.label}
-      </text>
-      {hasComment && (
+        <rect
+          x={labelBoxX} y={labelBoxY}
+          width={labelBoxW} height={labelBoxH}
+          rx={5} fill={lane.color}
+        />
         <text
-          x={labelBoxX + labelBoxW / 2} y={commentCY}
+          x={labelBoxX + labelBoxW / 2} y={labelCY}
           textAnchor="middle" dominantBaseline="middle"
-          fill="white" fontSize={9} opacity={0.85}
+          fill="white" fontSize={13} fontWeight={600}
+          letterSpacing="0.02em"
         >
-          {lane.comment.length > 14 ? lane.comment.slice(0, 13) + '…' : lane.comment}
+          {lane.label}
         </text>
+        {hasComment && (
+          <text
+            x={labelBoxX + labelBoxW / 2} y={commentCY}
+            textAnchor="middle" dominantBaseline="middle"
+            fill="white" fontSize={9} opacity={0.85}
+          >
+            {lane.comment.length > 14 ? lane.comment.slice(0, 13) + '…' : lane.comment}
+          </text>
+        )}
+      </g>
+
+      {/* Add-row button: small "+" badge in bottom-right corner, edit mode only */}
+      {editMode && (
+        <g
+          className="cursor-pointer"
+          onClick={(e) => { e.stopPropagation(); onAddRow?.(lane.id); }}
+        >
+          <circle cx={plusCX} cy={plusCY} r={7} fill="white" opacity={0.92} />
+          <text
+            x={plusCX} y={plusCY}
+            textAnchor="middle" dominantBaseline="middle"
+            fontSize={13} fontWeight={800} fill={lane.color}
+            style={{ pointerEvents: 'none' }}
+          >
+            +
+          </text>
+        </g>
       )}
     </g>
   );
