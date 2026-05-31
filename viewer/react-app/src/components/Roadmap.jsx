@@ -36,12 +36,18 @@ export function Roadmap({ recipe }) {
 
   // ---------- edit mode ----------
   const [editMode, setEditMode] = useState(false);
-  // Mutable milestone list; reset when recipe prop changes or edit mode turns off
+  // Mutable milestone list; reset when recipe prop changes
   const [editMilestones, setEditMilestones] = useState(() => recipe.milestones || []);
   useEffect(() => {
     setEditMilestones(recipe.milestones || []);
     setEditMode(false);
   }, [recipe]);
+
+  // Vertical drag: which lane is currently highlighted as the drop target
+  const [dragTargetLaneId, setDragTargetLaneId] = useState(null);
+  const dragTargetLaneIdRef = useRef(null);
+  // Updated every render so drag callbacks always see current layout
+  const layoutItemsRef = useRef([]);
 
   // Stable refs for values needed inside drag callbacks without re-creating them
   const dragRef = useRef(null);
@@ -61,31 +67,74 @@ export function Roadmap({ recipe }) {
       originalMilestones: editMilestones.map(ms => ({ ...ms })),
       lastDeltaDays: null,
     };
+    if (type === 'move') {
+      dragTargetLaneIdRef.current = laneId;
+      setDragTargetLaneId(laneId);
+    }
   }, [editMilestones]);
 
   const handleDragMove = useCallback((e) => {
     const dr = dragRef.current;
     if (!dr) return;
+
+    // Horizontal: shift dates
     const deltaX = e.clientX - dr.startClientX;
     const deltaDays = Math.round(deltaX / chartWRef.current * totalDaysRef.current);
-    if (deltaDays === dr.lastDeltaDays) return;
-    dr.lastDeltaDays = deltaDays;
+    if (deltaDays !== dr.lastDeltaDays) {
+      dr.lastDeltaDays = deltaDays;
+      setEditMilestones(
+        dr.originalMilestones.map(ms => {
+          const forThisOwner = ms.laneId === dr.laneId &&
+            (!dr.rowId || ms.rowId === dr.rowId);
+          const shouldShift =
+            dr.type === 'move' ? forThisOwner :
+            dr.type === 'resize-left'  ? forThisOwner && ms.definitionId === dr.fromDefId :
+            dr.type === 'resize-right' ? forThisOwner && ms.definitionId === dr.toDefId :
+            false;
+          return shouldShift ? { ...ms, date: addDays(ms.date, deltaDays) } : ms;
+        })
+      );
+    }
 
-    setEditMilestones(
-      dr.originalMilestones.map(ms => {
-        const forThisOwner = ms.laneId === dr.laneId &&
-          (!dr.rowId || ms.rowId === dr.rowId);
-        const shouldShift =
-          dr.type === 'move' ? forThisOwner :
-          dr.type === 'resize-left'  ? forThisOwner && ms.definitionId === dr.fromDefId :
-          dr.type === 'resize-right' ? forThisOwner && ms.definitionId === dr.toDefId :
-          false;
-        return shouldShift ? { ...ms, date: addDays(ms.date, deltaDays) } : ms;
-      })
-    );
+    // Vertical: update drop-target lane highlight (move only)
+    if (dr.type === 'move' && scrollContainerRef.current) {
+      const rect = scrollContainerRef.current.getBoundingClientRect();
+      const scrollTop = scrollContainerRef.current.scrollTop;
+      const svgY = e.clientY - rect.top + scrollTop;
+      let targetLaneId = null;
+      for (const item of layoutItemsRef.current) {
+        if (item.kind === 'lane' && svgY >= item.top && svgY < item.top + item.layout.totalH) {
+          targetLaneId = item.lane.id;
+          break;
+        }
+      }
+      if (targetLaneId !== dragTargetLaneIdRef.current) {
+        dragTargetLaneIdRef.current = targetLaneId;
+        setDragTargetLaneId(targetLaneId);
+      }
+    }
+  }, [scrollContainerRef]);
+
+  const handleDragEnd = useCallback(() => {
+    const dr = dragRef.current;
+    if (dr && dr.type === 'move') {
+      const newLaneId = dragTargetLaneIdRef.current;
+      if (newLaneId && newLaneId !== dr.laneId) {
+        // Commit the lane change onto the already date-shifted editMilestones
+        setEditMilestones(prev => prev.map(ms => {
+          const forThisOwner = ms.laneId === dr.laneId &&
+            (!dr.rowId || ms.rowId === dr.rowId);
+          if (!forThisOwner) return ms;
+          const moved = { ...ms, laneId: newLaneId };
+          delete moved.rowId;
+          return moved;
+        }));
+      }
+    }
+    dragTargetLaneIdRef.current = null;
+    setDragTargetLaneId(null);
+    dragRef.current = null;
   }, []);
-
-  const handleDragEnd = useCallback(() => { dragRef.current = null; }, []);
 
   // Attach drag listeners to window so drag works past SVG boundary
   useEffect(() => {
@@ -347,6 +396,9 @@ export function Roadmap({ recipe }) {
     briefPairs, briefMilestonesByLane, briefMilestonesByRow,
   ]);
 
+  // Keep layoutItemsRef in sync so drag callbacks see current lane positions
+  layoutItemsRef.current = layoutItems;
+
   // ---------- date → x (zoom-scaled width) ----------
   // The chart uses the available container width as the base, so the SVG
   // fills the viewport. Zoom multiplies that base width.
@@ -466,6 +518,7 @@ export function Roadmap({ recipe }) {
                 onHoverOwner={setHoveredOwner}
                 editMode={editMode}
                 onBarDragStart={handleBarDragStart}
+                isDragTarget={editMode && dragTargetLaneId === item.lane.id}
               />
             );
           })}

@@ -33,6 +33,7 @@ export function LaneRow({
   onHover,
   hoveredOwner, onHoverOwner,
   editMode, onBarDragStart,
+  isDragTarget,
 }) {
   const bars = computeAllBars(lane, briefPairs, briefMilestonesByLane, briefMilestonesByRow, dateToX);
 
@@ -45,6 +46,18 @@ export function LaneRow({
         fill={lane.bg}
         opacity={0.55}
       />
+
+      {/* Drop-zone highlight when dragging a bar vertically onto this lane */}
+      {isDragTarget && (
+        <rect
+          x={LANE_HEADER_W + 6} y={top + 3}
+          width={fullW - LANE_HEADER_W - 10} height={layout.totalH - 6}
+          rx={4}
+          fill="#eff6ff" fillOpacity={0.6}
+          stroke="#3b82f6" strokeWidth={2} strokeDasharray="6 3"
+          style={{ pointerEvents: 'none' }}
+        />
+      )}
 
       {/* range bars + milestones */}
       {bars.length > 0 && (
