@@ -191,22 +191,37 @@ function packBarsVertically(bars) {
 
 const BAR_H = 18;
 const BAR_GAP = 3;
-const MS_AREA_H = 36; // space below each bar for milestone icons + labels (single row)
+const MS_ROW_H = 32; // height per owner's milestone row (icon + label + date)
 
 function RangeBarStack({
   bars, top, selected, onSelect, lane, hoveredOwner, onHoverOwner,
   detailedMilestones, detailedMilestonesByRow, definitions, dateToX, onHover,
 }) {
-  const { assign } = packBarsVertically(bars);
-  const hasMilestones = detailedMilestones?.length > 0;
-  const perRow = BAR_H + BAR_GAP + (hasMilestones ? MS_AREA_H : 0);
+  const { assign, sublanes } = packBarsVertically(bars);
   const startY = top + 6;
+
+  // Collect unique owners in first-appearance order, with their milestone lists
+  const seen = new Set();
+  const ownerRows = [];
+  for (const bar of bars) {
+    if (seen.has(bar.ownerKey)) continue;
+    seen.add(bar.ownerKey);
+    const msList = (bar.rowId
+      ? (detailedMilestonesByRow?.[bar.rowId] || [])
+      : (detailedMilestones || [])
+    ).filter(ms => resolveMilestoneStyle(ms, definitions).tier !== 'brief');
+    if (msList.length > 0) ownerRows.push({ ownerKey: bar.ownerKey, msList });
+  }
+
+  const barSectionH = sublanes * (BAR_H + BAR_GAP);
+  const msSectionTop = startY + barSectionH + (ownerRows.length > 0 ? 6 : 0);
 
   return (
     <g>
+      {/* Range bars */}
       {bars.map((bar, i) => {
         const idx = assign[i];
-        const barY = startY + idx * perRow;
+        const barY = startY + idx * (BAR_H + BAR_GAP);
         const isSelected = selected?.kind === 'briefRange'
           && selected?.data.ownerKey === bar.ownerKey
           && selected?.data.pairId === bar.pairId;
@@ -216,57 +231,61 @@ function RangeBarStack({
         );
         const isDimmed = hoveredOwner && !ownerMatch;
         const isHighlighted = Boolean(ownerMatch);
-
-        // Milestones belonging to this bar's owner
-        const barMilestones = bar.rowId
-          ? (detailedMilestonesByRow?.[bar.rowId] || [])
-          : (detailedMilestones || []);
-        const msBaseY = barY + BAR_H + 5;
-
         return (
-          <g key={`${bar.ownerKey}-${bar.pairId}`}>
-            <RangeBar
-              bar={bar} y={barY} h={BAR_H}
-              isSelected={isSelected}
-              isDimmed={isDimmed}
-              isHighlighted={isHighlighted}
-              onMouseEnter={() => onHoverOwner?.({
-                kind: bar.rowId ? 'row' : 'lane',
-                id: bar.ownerKey,
+          <RangeBar
+            key={`${bar.ownerKey}-${bar.pairId}`}
+            bar={bar} y={barY} h={BAR_H}
+            isSelected={isSelected}
+            isDimmed={isDimmed}
+            isHighlighted={isHighlighted}
+            onMouseEnter={() => onHoverOwner?.({
+              kind: bar.rowId ? 'row' : 'lane',
+              id: bar.ownerKey,
+              laneId: lane.id,
+            })}
+            onMouseLeave={() => onHoverOwner?.(null)}
+            onClick={() => onSelect({
+              kind: 'briefRange',
+              data: {
+                ownerKey: bar.ownerKey,
+                pairId: bar.pairId,
+                label: bar.label,
+                fromDate: bar.fromDate,
+                toDate: bar.toDate,
+                rowId: bar.rowId,
+                rowLabel: bar.rowLabel,
                 laneId: lane.id,
-              })}
-              onMouseLeave={() => onHoverOwner?.(null)}
-              onClick={() => onSelect({
-                kind: 'briefRange',
-                data: {
-                  ownerKey: bar.ownerKey,
-                  pairId: bar.pairId,
-                  label: bar.label,
-                  fromDate: bar.fromDate,
-                  toDate: bar.toDate,
-                  rowId: bar.rowId,
-                  rowLabel: bar.rowLabel,
-                  laneId: lane.id,
-                },
-                row: bar.row,
-                lane,
-              })}
-            />
-            {hasMilestones && barMilestones.map((ms, j) => {
+              },
+              row: bar.row,
+              lane,
+            })}
+          />
+        );
+      })}
+
+      {/* Milestone section: one horizontal row per unique owner, in first-appearance order */}
+      {ownerRows.map(({ ownerKey, msList }, rowIndex) => {
+        const rowY = msSectionTop + rowIndex * MS_ROW_H;
+        const iconY = rowY + 6;
+        const labelY = iconY + 9;
+        const dateY = labelY + 12;
+        const ownerMatch = hoveredOwner && (
+          hoveredOwner.id === ownerKey ||
+          (hoveredOwner.kind === 'lane' && hoveredOwner.id === lane.id)
+        );
+        const isDimmed = hoveredOwner && !ownerMatch;
+        const isHighlighted = Boolean(ownerMatch);
+        return (
+          <g key={ownerKey} opacity={isDimmed ? 0.3 : 1}>
+            {msList.map(ms => {
               const style = resolveMilestoneStyle(ms, definitions);
-              if (style.tier === 'brief') return null;
               const displayName = ms.name || style.label || 'Milestone';
               const x = dateToX(ms.date);
-              const iconY = msBaseY + 6;
-              const labelY = iconY + 9;
-              const dateY = labelY + 12;
               const isMsSelected = selected?.kind === 'milestone' && selected?.data.id === ms.id;
-              const opacity = isDimmed ? 0.3 : 1;
               return (
                 <g
                   key={ms.id}
                   className="cursor-pointer"
-                  opacity={opacity}
                   onClick={() => onSelect({ kind: 'milestone', data: ms, style, lane })}
                   onMouseEnter={() => onHover?.({ x, y: iconY - 8, label: `${displayName} · ${fmtShort(ms.date)}` })}
                   onMouseLeave={() => onHover?.(null)}
@@ -275,13 +294,13 @@ function RangeBarStack({
                     icon={style.icon}
                     x={x} y={iconY}
                     color={style.color}
-                    isSelected={isMsSelected}
+                    isSelected={isMsSelected || isHighlighted}
                   />
                   <text
                     x={x} y={labelY}
                     textAnchor="middle" dominantBaseline="hanging"
-                    fontSize={10.5} fontWeight={700} fill="#1e293b"
-                    style={{ pointerEvents: 'none' }}
+                    fontSize={10.5} fontWeight={isMsSelected || isHighlighted ? 800 : 700}
+                    fill="#1e293b" style={{ pointerEvents: 'none' }}
                   >
                     {displayName}
                   </text>

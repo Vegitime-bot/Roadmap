@@ -1,28 +1,29 @@
-// Each bar sublane: bar height + gap + optional milestone area below
 const BAR_H = 18;
 const BAR_GAP = 3;
-const MS_AREA_H = 36; // milestone icons + labels below each bar row (single row)
+const MS_ROW_H = 32; // height per milestone owner-row
 
 /**
  * Lane vertical layout.
  *
- * Milestones are rendered directly below each range bar (same visual
- * row), so the lane height scales with the number of bar sublanes and
- * whether the lane has milestones.
+ * Bar section: stacked range bars (upper area).
+ * Milestone section: one horizontal row per distinct owner (row/lane),
+ * rendered below all bars.
  */
-export function computeLaneLayout(_lane, laneMilestonesCount = 0, maxBarCount = 0) {
+export function computeLaneLayout(lane, laneMilestonesCount = 0, maxBarCount = 0) {
   const hasMilestones = laneMilestonesCount > 0;
 
+  // Number of milestone rows = distinct owners with milestones.
+  // For multi-row lanes each row is one owner; for single-row it's one.
+  const numMilestoneRows = hasMilestones
+    ? (Array.isArray(lane.rows) && lane.rows.length > 0 ? lane.rows.length : 1)
+    : 0;
+
   if (maxBarCount === 0) {
-    // No bars: minimal height (milestones won't render in this case)
     return { mode: 'single', msAreaH: 44, totalH: 44 };
   }
 
-  const perRow = BAR_H + BAR_GAP + (hasMilestones ? MS_AREA_H : 0);
-  const totalH = Math.max(44, 12 + maxBarCount * perRow);
-  return {
-    mode: 'single',
-    msAreaH: totalH,
-    totalH,
-  };
+  const barSectionH = maxBarCount * (BAR_H + BAR_GAP);
+  const msSectionH = numMilestoneRows > 0 ? 6 + numMilestoneRows * MS_ROW_H : 0;
+  const totalH = Math.max(44, 12 + barSectionH + msSectionH);
+  return { mode: 'single', msAreaH: totalH, totalH };
 }

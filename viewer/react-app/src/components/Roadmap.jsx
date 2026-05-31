@@ -374,6 +374,7 @@ export function Roadmap({ recipe }) {
                   item={item}
                   fullW={svgWidth}
                   onToggle={onToggle}
+                  scrollLeft={scrollLeft}
                 />
               );
             }

@@ -1,4 +1,4 @@
-import { GROUP_HEADER_H, SUPER_GROUP_HEADER_H } from '../utils/constants';
+import { GROUP_HEADER_H, SUPER_GROUP_HEADER_H, LANE_HEADER_W } from '../utils/constants';
 
 /**
  * SVG-rendered header bar for a lane group (lv2) or super-group (lv1).
@@ -10,13 +10,15 @@ import { GROUP_HEADER_H, SUPER_GROUP_HEADER_H } from '../utils/constants';
  * Clicking toggles collapse via `onToggle`. Collapsing a super-group
  * folds all its lv2 groups (and their lanes) into one row.
  */
-export function GroupHeader({ item, fullW, onToggle }) {
+export function GroupHeader({ item, fullW, onToggle, scrollLeft = 0 }) {
   const { group, top, collapsed, level } = item;
   const isSuper = level === 'super';
   const h = isSuper ? SUPER_GROUP_HEADER_H : GROUP_HEADER_H;
   const color = group.color || '#1e293b';
 
-  const cx = isSuper ? 22 : 16;
+  // Chevron and label always appear just past the sticky lane-header column
+  const baseX = scrollLeft + LANE_HEADER_W + 10;
+  const cx = baseX + (isSuper ? 6 : 5);
   const cy = top + h / 2;
   const chevron = collapsed
     ? `M ${cx - 3} ${cy - 4} L ${cx + 3} ${cy} L ${cx - 3} ${cy + 4}`
@@ -24,7 +26,7 @@ export function GroupHeader({ item, fullW, onToggle }) {
 
   const bgOpacity = isSuper ? 0.14 : 0.06;
   const labelFontSize = isSuper ? 14 : 12;
-  const labelX = isSuper ? 40 : 30;
+  const labelX = baseX + 18;
   const descX = labelX + (isSuper ? group.label.length * 9 : group.label.length * 7.5) + 12;
   const labelLetterSpacing = isSuper ? '0.08em' : '0.05em';
 
