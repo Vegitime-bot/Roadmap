@@ -1,11 +1,11 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Clock } from 'lucide-react';
 
 import {
   CHART_W, CHART_LEFT_BASE, LANE_HEADER_W, CHART_RIGHT_PAD,
   GLOBAL_MS_AREA_H, TOP_PAD, MONTH_BAR_H, GROUP_HEADER_H, SUPER_GROUP_HEADER_H,
 } from '../utils/constants';
-import { parseDate, daysBetween, buildMonths, fmtFullDate } from '../utils/dates';
+import { parseDate, daysBetween, buildMonths, fmtFullDate, addDays } from '../utils/dates';
 import { isBriefMilestone } from '../utils/milestones';
 import { computeLaneLayout } from '../utils/layout';
 
@@ -32,9 +32,71 @@ export function Roadmap({ recipe }) {
   const [collapsedSuperGroups, setCollapsedSuperGroups] = useState(new Set());
   const [showMilestones, setShowMilestones] = useState(true);
   const [showToday, setShowToday] = useState(true);
-  // Highlight all items belonging to the hovered row (or lane in single-row mode).
-  // shape: { kind: 'row'|'lane', id, laneId } | null
   const [hoveredOwner, setHoveredOwner] = useState(null);
+
+  // ---------- edit mode ----------
+  const [editMode, setEditMode] = useState(false);
+  // Mutable milestone list; reset when recipe prop changes or edit mode turns off
+  const [editMilestones, setEditMilestones] = useState(() => recipe.milestones || []);
+  useEffect(() => {
+    setEditMilestones(recipe.milestones || []);
+    setEditMode(false);
+  }, [recipe]);
+
+  // Stable refs for values needed inside drag callbacks without re-creating them
+  const dragRef = useRef(null);
+  const chartWRef = useRef(0);
+  const totalDaysRef = useRef(0);
+
+  const handleBarDragStart = useCallback((e, type, bar, laneId) => {
+    e.preventDefault();
+    dragRef.current = {
+      type,           // 'move' | 'resize-left' | 'resize-right'
+      laneId,
+      rowId: bar.rowId || null,
+      fromDefId: bar.fromDefinitionId,
+      toDefId: bar.toDefinitionId,
+      startClientX: e.clientX,
+      // Snapshot milestones at drag start so delta is always from origin
+      originalMilestones: editMilestones.map(ms => ({ ...ms })),
+      lastDeltaDays: null,
+    };
+  }, [editMilestones]);
+
+  const handleDragMove = useCallback((e) => {
+    const dr = dragRef.current;
+    if (!dr) return;
+    const deltaX = e.clientX - dr.startClientX;
+    const deltaDays = Math.round(deltaX / chartWRef.current * totalDaysRef.current);
+    if (deltaDays === dr.lastDeltaDays) return;
+    dr.lastDeltaDays = deltaDays;
+
+    setEditMilestones(
+      dr.originalMilestones.map(ms => {
+        const forThisOwner = ms.laneId === dr.laneId &&
+          (!dr.rowId || ms.rowId === dr.rowId);
+        const shouldShift =
+          dr.type === 'move' ? forThisOwner :
+          dr.type === 'resize-left'  ? forThisOwner && ms.definitionId === dr.fromDefId :
+          dr.type === 'resize-right' ? forThisOwner && ms.definitionId === dr.toDefId :
+          false;
+        return shouldShift ? { ...ms, date: addDays(ms.date, deltaDays) } : ms;
+      })
+    );
+  }, []);
+
+  const handleDragEnd = useCallback(() => { dragRef.current = null; }, []);
+
+  // Attach drag listeners to window so drag works past SVG boundary
+  useEffect(() => {
+    if (!editMode) return;
+    window.addEventListener('mousemove', handleDragMove);
+    window.addEventListener('mouseup', handleDragEnd);
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+    };
+  }, [editMode, handleDragMove, handleDragEnd]);
 
   // ---------- zoom (state + keyboard + wheel) ----------
   const { zoom, zoomIn, zoomOut, resetZoom, scrollContainerRef } = useZoom(1);
@@ -91,7 +153,7 @@ export function Roadmap({ recipe }) {
     const briefByLane = {};
     const detailedByRow = {};
     const briefByRow = {};
-    for (const ms of recipe.milestones || []) {
+    for (const ms of editMilestones) {
       const brief = isBriefMilestone(ms, recipe.milestoneDefinitions);
       if (ms.laneId) {
         const targetLane = brief ? briefByLane : detailedByLane;
@@ -118,7 +180,7 @@ export function Roadmap({ recipe }) {
       detailedMilestonesByRow: detailedByRow,
       briefMilestonesByRow: briefByRow,
     };
-  }, [recipe.milestones, recipe.milestoneDefinitions]);
+  }, [editMilestones, recipe.milestoneDefinitions]);
 
   const milestoneAreaH = globalMilestones.length > 0 ? GLOBAL_MS_AREA_H : TOP_PAD;
 
@@ -301,6 +363,10 @@ export function Roadmap({ recipe }) {
     return chartLeft + (off / totalDays) * chartW;
   }, [startD, totalDays, chartW, chartLeft]);
 
+  // Keep stable refs so drag callbacks don't need these as deps
+  chartWRef.current = chartW;
+  totalDaysRef.current = totalDays;
+
   const svgWidth = chartLeft + chartW + CHART_RIGHT_PAD;
   const months = useMemo(() => buildMonths(startD, endD), [startD, endD]);
 
@@ -344,6 +410,7 @@ export function Roadmap({ recipe }) {
         showMilestones={showMilestones} onToggleMilestones={setShowMilestones}
         showToday={showToday} onToggleToday={setShowToday}
         zoom={zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onZoomReset={resetZoom}
+        editMode={editMode} onToggleEditMode={setEditMode}
       />
 
       <MilestoneLegend
@@ -397,6 +464,8 @@ export function Roadmap({ recipe }) {
                 onHover={setHovered}
                 hoveredOwner={hoveredOwner}
                 onHoverOwner={setHoveredOwner}
+                editMode={editMode}
+                onBarDragStart={handleBarDragStart}
               />
             );
           })}

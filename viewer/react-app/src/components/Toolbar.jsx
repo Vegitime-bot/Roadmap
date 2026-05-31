@@ -1,4 +1,4 @@
-import { Filter, Eye, EyeOff, ZoomIn, ZoomOut, Minimize2 } from 'lucide-react';
+import { Filter, Eye, EyeOff, ZoomIn, ZoomOut, Minimize2, Edit3 } from 'lucide-react';
 import { ZOOM_MIN, ZOOM_MAX } from '../utils/constants';
 
 /**
@@ -17,6 +17,7 @@ export function Toolbar({
   showMilestones, onToggleMilestones,
   showToday, onToggleToday,
   zoom, onZoomIn, onZoomOut, onZoomReset,
+  editMode, onToggleEditMode,
 }) {
   return (
     <div className="mb-4 bg-white rounded-xl border border-slate-200 p-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
@@ -63,6 +64,21 @@ export function Toolbar({
       </label>
 
       <div className="h-5 w-px bg-slate-200" />
+
+      <div className="h-5 w-px bg-slate-200" />
+
+      <label className={`flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-lg transition font-medium ${
+        editMode ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'text-slate-500 hover:bg-slate-100'
+      }`}>
+        <Edit3 size={13} />
+        <input
+          type="checkbox"
+          className="hidden"
+          checked={editMode}
+          onChange={(e) => onToggleEditMode(e.target.checked)}
+        />
+        편집 모드
+      </label>
 
       <div className="flex-1" />
 

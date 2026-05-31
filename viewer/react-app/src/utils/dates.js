@@ -19,6 +19,12 @@ export const fmtFullDate = (s) => {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 };
 
+export const addDays = (dateStr, days) => {
+  const d = parseDate(dateStr);
+  d.setDate(d.getDate() + Math.round(days));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 export const durationDays = (a, b) => daysBetween(parseDate(a), parseDate(b)) + 1;
 
 // Build an array of month windows covering [startD, endD]. Each entry has

@@ -32,6 +32,7 @@ export function LaneRow({
   definitions,
   onHover,
   hoveredOwner, onHoverOwner,
+  editMode, onBarDragStart,
 }) {
   const bars = computeAllBars(lane, briefPairs, briefMilestonesByLane, briefMilestonesByRow, dateToX);
 
@@ -45,7 +46,7 @@ export function LaneRow({
         opacity={0.55}
       />
 
-      {/* range bars + milestones below each bar */}
+      {/* range bars + milestones */}
       {bars.length > 0 && (
         <RangeBarStack
           bars={bars}
@@ -60,6 +61,8 @@ export function LaneRow({
           definitions={definitions}
           dateToX={dateToX}
           onHover={onHover}
+          editMode={editMode}
+          onBarDragStart={onBarDragStart}
         />
       )}
     </>
@@ -155,6 +158,8 @@ function buildBar(pair, briefs, dateToX, laneColor) {
   if (xEnd <= xStart) return null;
   return {
     pairId: pair.id || `${pair.fromDefinitionId}-${pair.toDefinitionId}`,
+    fromDefinitionId: pair.fromDefinitionId,
+    toDefinitionId: pair.toDefinitionId,
     x: xStart,
     w: xEnd - xStart,
     label: pair.label || '',
@@ -196,6 +201,7 @@ const MS_ROW_H = 32; // height per owner's milestone row (icon + label + date)
 function RangeBarStack({
   bars, top, selected, onSelect, lane, hoveredOwner, onHoverOwner,
   detailedMilestones, detailedMilestonesByRow, definitions, dateToX, onHover,
+  editMode, onBarDragStart,
 }) {
   const { assign, sublanes } = packBarsVertically(bars);
   const startY = top + 6;
@@ -238,13 +244,15 @@ function RangeBarStack({
             isSelected={isSelected}
             isDimmed={isDimmed}
             isHighlighted={isHighlighted}
+            editMode={editMode}
+            onDragStart={(e, type) => onBarDragStart?.(e, type, bar, lane.id)}
             onMouseEnter={() => onHoverOwner?.({
               kind: bar.rowId ? 'row' : 'lane',
               id: bar.ownerKey,
               laneId: lane.id,
             })}
             onMouseLeave={() => onHoverOwner?.(null)}
-            onClick={() => onSelect({
+            onClick={() => !editMode && onSelect({
               kind: 'briefRange',
               data: {
                 ownerKey: bar.ownerKey,
@@ -322,18 +330,20 @@ function RangeBarStack({
   );
 }
 
-function RangeBar({ bar, y, h, isSelected, isDimmed, isHighlighted, onClick, onMouseEnter, onMouseLeave }) {
+const DRAG_HANDLE_W = 8; // px width of resize handle hit area
+
+function RangeBar({ bar, y, h, isSelected, isDimmed, isHighlighted, onClick, onMouseEnter, onMouseLeave, editMode, onDragStart }) {
   const minLabelW = 40;
   const minDateW = 100;
   const labelText = bar.rowLabel || bar.label || '';
-  // Visual state derived from hover.
   const fillOpacity = isDimmed ? 0.25 : (isHighlighted ? 1.0 : 0.85);
   const ringStroke = isSelected ? '#1e293b' : (isHighlighted ? bar.color : null);
   const ringWidth = isSelected ? 2 : (isHighlighted ? 2 : 0);
+  const hasHandles = editMode && bar.w > DRAG_HANDLE_W * 2;
 
   return (
     <g
-      className="cursor-pointer"
+      className={editMode ? undefined : 'cursor-pointer'}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -342,6 +352,13 @@ function RangeBar({ bar, y, h, isSelected, isDimmed, isHighlighted, onClick, onM
       {ringStroke && (
         <rect x={bar.x - 2} y={y - 2} width={bar.w + 4} height={h + 4} rx={5}
           fill="none" stroke={ringStroke} strokeWidth={ringWidth} />
+      )}
+      {/* Edit mode: dashed outline */}
+      {editMode && (
+        <rect x={bar.x} y={y} width={bar.w} height={h} rx={3}
+          fill="none" stroke="white" strokeWidth={1} strokeDasharray="4 3" opacity={0.7}
+          style={{ pointerEvents: 'none' }}
+        />
       )}
       {bar.w > minLabelW && labelText && (
         <text
@@ -363,6 +380,28 @@ function RangeBar({ bar, y, h, isSelected, isDimmed, isHighlighted, onClick, onM
           <text x={bar.x + bar.w - 3} y={y - 3} textAnchor="end" fontSize={9} fill="#475569" style={{ pointerEvents: 'none' }}>
             {fmtShort(bar.toDate)}
           </text>
+        </>
+      )}
+
+      {/* Drag handles (edit mode only): left resize | center move | right resize */}
+      {hasHandles && (
+        <>
+          <rect
+            x={bar.x} y={y} width={DRAG_HANDLE_W} height={h} rx={2}
+            fill="white" opacity={0.25} style={{ cursor: 'ew-resize' }}
+            onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); onDragStart(e, 'resize-left'); }}
+          />
+          <rect
+            x={bar.x + DRAG_HANDLE_W} y={y}
+            width={bar.w - DRAG_HANDLE_W * 2} height={h}
+            fill="transparent" style={{ cursor: 'grab' }}
+            onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); onDragStart(e, 'move'); }}
+          />
+          <rect
+            x={bar.x + bar.w - DRAG_HANDLE_W} y={y} width={DRAG_HANDLE_W} height={h} rx={2}
+            fill="white" opacity={0.25} style={{ cursor: 'ew-resize' }}
+            onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); onDragStart(e, 'resize-right'); }}
+          />
         </>
       )}
     </g>
