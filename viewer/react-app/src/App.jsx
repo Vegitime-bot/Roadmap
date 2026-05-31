@@ -47,6 +47,18 @@ export default function App() {
     }
   };
 
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setDraftJson(ev.target.result);
+      setEditorOpen(true);
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const handleReset = () => {
     setCustomRecipe(null);
     setDraftJson('');
@@ -89,6 +101,10 @@ export default function App() {
           >
             현재 데이터 편집
           </button>
+          <label className="px-3 py-1 rounded-md bg-white text-slate-600 border border-slate-200 hover:border-slate-400 transition cursor-pointer">
+            파일 업로드
+            <input type="file" accept=".json" className="hidden" onChange={handleFileUpload} />
+          </label>
           <button
             onClick={() => setEditorOpen(o => !o)}
             className="px-3 py-1 rounded-md bg-slate-800 text-white hover:bg-slate-700 transition"
