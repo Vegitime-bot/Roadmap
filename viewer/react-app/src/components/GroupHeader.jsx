@@ -27,7 +27,9 @@ export function GroupHeader({ item, fullW, onToggle, scrollLeft = 0 }) {
   const bgOpacity = isSuper ? 0.14 : 0.06;
   const labelFontSize = isSuper ? 14 : 12;
   const labelX = baseX + 18;
-  const descX = labelX + (isSuper ? group.label.length * 9 : group.label.length * 7.5) + 12;
+  // Uppercase + heavy weight + letterSpacing makes chars wider than average;
+  // use generous per-char estimates to avoid description overlapping the label.
+  const descX = labelX + (isSuper ? group.label.length * 11.5 : group.label.length * 9.5) + 20;
   const labelLetterSpacing = isSuper ? '0.08em' : '0.05em';
 
   const summary = formatSummary(item);
