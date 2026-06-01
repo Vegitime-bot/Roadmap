@@ -59,6 +59,10 @@ export function Roadmap({ recipe }) {
   const chartWRef = useRef(0);
   const totalDaysRef = useRef(0);
 
+  // ---------- zoom (state + keyboard + wheel) ----------
+  // Must be declared before drag handlers so scrollContainerRef is in scope
+  const { zoom, zoomIn, zoomOut, resetZoom, scrollContainerRef } = useZoom(1);
+
   const handleBarDragStart = useCallback((e, type, bar, laneId) => {
     e.preventDefault();
     dragRef.current = {
@@ -151,9 +155,6 @@ export function Roadmap({ recipe }) {
       window.removeEventListener('mouseup', handleDragEnd);
     };
   }, [editMode, handleDragMove, handleDragEnd]);
-
-  // ---------- zoom (state + keyboard + wheel) ----------
-  const { zoom, zoomIn, zoomOut, resetZoom, scrollContainerRef } = useZoom(1);
 
   // ---------- responsive chart width ----------
   // Measure the scroll container so the SVG fills the viewport width.
