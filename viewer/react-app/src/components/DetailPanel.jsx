@@ -8,7 +8,7 @@ import { fmtFullDate, durationDays } from '../utils/dates';
  *   - 'milestone'  — clicked a milestone point
  *   - 'briefRange' — clicked the lane-internal brief range bar
  */
-export function DetailPanel({ selected, onClose }) {
+export function DetailPanel({ selected, onClose, editMode, onEditLabel }) {
   const { kind, data, lane } = selected;
   const isLane = kind === 'lane';
   const isMilestone = kind === 'milestone';
@@ -51,7 +51,7 @@ export function DetailPanel({ selected, onClose }) {
       <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
         {isLane && <LaneBody data={data} />}
         {isMilestone && <MilestoneBody data={data} style={selected.style} lane={lane} />}
-        {isBriefRange && <BriefRangeBody data={data} row={selected.row} />}
+        {isBriefRange && <BriefRangeBody data={data} row={selected.row} editMode={editMode} onEditLabel={onEditLabel} />}
       </div>
     </div>
   );
@@ -107,14 +107,27 @@ function MilestoneBody({ data, style, lane }) {
   );
 }
 
-function BriefRangeBody({ data, row }) {
+function BriefRangeBody({ data, row, editMode, onEditLabel }) {
   return (
     <>
       <Field icon={<Calendar size={14} />} label="기간">
         {fmtFullDate(data.fromDate)} → {fmtFullDate(data.toDate)}
         <span className="ml-2 text-slate-400">({durationDays(data.fromDate, data.toDate)}일)</span>
       </Field>
-      <Field icon={<Tag size={14} />} label="구간 Label">{data.label || '—'}</Field>
+      <Field icon={<Tag size={14} />} label="구간 Label">
+        {editMode && onEditLabel ? (
+          <input
+            className="border border-slate-300 rounded px-2 py-0.5 text-sm w-full focus:outline-none focus:border-blue-500"
+            defaultValue={data.rowLabel || data.label || ''}
+            onBlur={(e) => onEditLabel(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { onEditLabel(e.target.value); e.target.blur(); }
+            }}
+          />
+        ) : (
+          data.label || '—'
+        )}
+      </Field>
       {(data.rowLabel || row?.label) && (
         <Field icon={<Tag size={14} />} label="Row / Item">
           {data.rowLabel || row?.label}

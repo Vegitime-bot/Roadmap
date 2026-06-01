@@ -33,6 +33,7 @@ export function LaneRow({
   onHover,
   hoveredOwner, onHoverOwner,
   editMode, onBarDragStart,
+  onMilestoneDragStart,
   isDragTarget,
 }) {
   const bars = computeAllBars(lane, briefPairs, briefMilestonesByLane, briefMilestonesByRow, dateToX);
@@ -76,6 +77,7 @@ export function LaneRow({
           onHover={onHover}
           editMode={editMode}
           onBarDragStart={onBarDragStart}
+          onMilestoneDragStart={onMilestoneDragStart}
         />
       )}
     </>
@@ -236,7 +238,7 @@ const MS_ROW_H = 32; // height per owner's milestone row (icon + label + date)
 function RangeBarStack({
   bars, top, selected, onSelect, lane, hoveredOwner, onHoverOwner,
   detailedMilestones, detailedMilestonesByRow, definitions, dateToX, onHover,
-  editMode, onBarDragStart,
+  editMode, onBarDragStart, onMilestoneDragStart,
 }) {
   const { assign, sublanes } = packBarsVertically(bars);
   const startY = top + 6;
@@ -287,7 +289,7 @@ function RangeBarStack({
               laneId: lane.id,
             })}
             onMouseLeave={() => onHoverOwner?.(null)}
-            onClick={() => !editMode && onSelect({
+            onClick={() => onSelect({
               kind: 'briefRange',
               data: {
                 ownerKey: bar.ownerKey,
@@ -298,6 +300,9 @@ function RangeBarStack({
                 rowId: bar.rowId,
                 rowLabel: bar.rowLabel,
                 laneId: lane.id,
+                barSvgX: bar.x,
+                barSvgY: barY,
+                barSvgW: bar.w,
               },
               row: bar.row,
               lane,
@@ -329,7 +334,9 @@ function RangeBarStack({
                 <g
                   key={ms.id}
                   className="cursor-pointer"
+                  style={{ cursor: editMode ? 'ew-resize' : 'pointer' }}
                   onClick={() => onSelect({ kind: 'milestone', data: ms, style, lane })}
+                  onMouseDown={editMode ? (e) => onMilestoneDragStart?.(e, ms) : undefined}
                   onMouseEnter={() => onHover?.({ x, y: iconY - 8, label: `${displayName} · ${fmtShort(ms.date)}` })}
                   onMouseLeave={() => onHover?.(null)}
                 >

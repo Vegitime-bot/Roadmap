@@ -5,7 +5,7 @@ import {
   CHART_W, CHART_LEFT_BASE, LANE_HEADER_W, CHART_RIGHT_PAD,
   GLOBAL_MS_AREA_H, TOP_PAD, MONTH_BAR_H, GROUP_HEADER_H, SUPER_GROUP_HEADER_H,
 } from '../utils/constants';
-import { parseDate, daysBetween, buildMonths, fmtFullDate, addDays } from '../utils/dates';
+import { parseDate, daysBetween, buildMonths, fmtFullDate, addDays, durationDays } from '../utils/dates';
 import { isBriefMilestone } from '../utils/milestones';
 import { computeLaneLayout } from '../utils/layout';
 
@@ -26,6 +26,68 @@ function downloadJSON(data, filename) {
   URL.revokeObjectURL(url);
 }
 
+function downloadText(text, filename) {
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function generateNL(recipe, editLanes, editMilestones, briefPairs) {
+  const defs = recipe.milestoneDefinitions || [];
+  const briefDefIds = new Set(briefPairs.flatMap(p => [p.fromDefinitionId, p.toDefinitionId]));
+  const lines = [];
+  lines.push(`로드맵: ${recipe.title || '(제목 없음)'}`);
+  lines.push(`기간: ${fmtFullDate(recipe.timeRange.start)} ~ ${fmtFullDate(recipe.timeRange.end)}`);
+  if (recipe.today) lines.push(`기준일: ${fmtFullDate(recipe.today)}`);
+  lines.push('');
+
+  for (const lane of editLanes) {
+    lines.push(`■ ${lane.label}`);
+    const laneMs = editMilestones.filter(ms => ms.laneId === lane.id);
+
+    const renderOwner = (ownerMs, indent) => {
+      for (const pair of briefPairs) {
+        const from = ownerMs.find(m => m.definitionId === pair.fromDefinitionId);
+        const to   = ownerMs.find(m => m.definitionId === pair.toDefinitionId);
+        if (from && to) {
+          const dur = durationDays(from.date, to.date);
+          lines.push(`${indent}▸ ${pair.label || '기간'}: ${fmtFullDate(from.date)} ~ ${fmtFullDate(to.date)} (${dur}일)`);
+        }
+      }
+      const detailed = ownerMs
+        .filter(m => !briefDefIds.has(m.definitionId))
+        .sort((a, b) => parseDate(a.date) - parseDate(b.date));
+      for (const ms of detailed) {
+        const def = defs.find(d => d.id === ms.definitionId);
+        lines.push(`${indent}  • ${fmtFullDate(ms.date)}: ${ms.name || def?.label || ms.definitionId}`);
+      }
+    };
+
+    if (Array.isArray(lane.rows) && lane.rows.length > 0) {
+      for (const row of lane.rows) {
+        lines.push(`  ▷ ${row.label}`);
+        renderOwner(laneMs.filter(m => m.rowId === row.id), '    ');
+      }
+    } else {
+      renderOwner(laneMs, '  ');
+    }
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+function milestonesToCSV(milestones, definitions) {
+  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const header = 'id,laneId,rowId,definitionId,definitionLabel,date,name';
+  const rows = milestones.map(ms => {
+    const def = (definitions || []).find(d => d.id === ms.definitionId);
+    return [ms.id, ms.laneId, ms.rowId, ms.definitionId, def?.label, ms.date, ms.name].map(esc).join(',');
+  });
+  return [header, ...rows].join('\r\n');
+}
+
 export function Roadmap({ recipe }) {
   // ---------- selection / hover / filters ----------
   const [selected, setSelected] = useState(null);
@@ -42,6 +104,7 @@ export function Roadmap({ recipe }) {
   // Mutable copies of milestones + lanes; reset when recipe prop changes
   const [editMilestones, setEditMilestones] = useState(() => recipe.milestones || []);
   const [editLanes, setEditLanes] = useState(() => JSON.parse(JSON.stringify(recipe.lanes)));
+  const [inlineEdit, setInlineEdit] = useState(null); // { x, y, w, rowId, laneId, pairId, value }
   useEffect(() => {
     setEditMilestones(recipe.milestones || []);
     setEditLanes(JSON.parse(JSON.stringify(recipe.lanes)));
@@ -67,6 +130,7 @@ export function Roadmap({ recipe }) {
     e.preventDefault();
     dragRef.current = {
       type,           // 'move' | 'resize-left' | 'resize-right'
+      msId: null,
       laneId,
       rowId: bar.rowId || null,
       fromDefId: bar.fromDefinitionId,
@@ -82,6 +146,18 @@ export function Roadmap({ recipe }) {
     }
   }, [editMilestones]);
 
+  const handleMilestoneDragStart = useCallback((e, ms) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragRef.current = {
+      type: 'milestone-move',
+      msId: ms.id,
+      startClientX: e.clientX,
+      originalMilestones: editMilestones.map(m => ({ ...m })),
+      lastDeltaDays: null,
+    };
+  }, [editMilestones]);
+
   const handleDragMove = useCallback((e) => {
     const dr = dragRef.current;
     if (!dr) return;
@@ -91,6 +167,14 @@ export function Roadmap({ recipe }) {
     const deltaDays = Math.round(deltaX / chartWRef.current * totalDaysRef.current);
     if (deltaDays !== dr.lastDeltaDays) {
       dr.lastDeltaDays = deltaDays;
+
+      if (dr.type === 'milestone-move') {
+        setEditMilestones(dr.originalMilestones.map(ms =>
+          ms.id === dr.msId ? { ...ms, date: addDays(ms.date, deltaDays) } : ms
+        ));
+        return; // skip vertical-lane logic
+      }
+
       setEditMilestones(
         dr.originalMilestones.map(ms => {
           const forThisOwner = ms.laneId === dr.laneId &&
@@ -266,7 +350,17 @@ export function Roadmap({ recipe }) {
         { id: `ms_${ts}_${i}a`, laneId, rowId: newRowId, definitionId: pair.fromDefinitionId, date: newStartDate },
         { id: `ms_${ts}_${i}b`, laneId, rowId: newRowId, definitionId: pair.toDefinitionId, date: newEndDate },
       ]);
-      return [...upgraded, ...newMs];
+      const briefDefIds = new Set(briefPairs.flatMap(p => [p.fromDefinitionId, p.toDefinitionId]));
+      const detailedDefs = (recipe.milestoneDefinitions || []).filter(d => !briefDefIds.has(d.id));
+      const n = detailedDefs.length;
+      const detailedMs = detailedDefs.map((def, i) => ({
+        id: `ms_${ts}_d${i}`,
+        laneId,
+        rowId: newRowId,
+        definitionId: def.id,
+        date: addDays(newStartDate, Math.round(30 * (i + 1) / (n + 1))),
+      }));
+      return [...upgraded, ...newMs, ...detailedMs];
     });
   }, [editLanes, briefPairs, recipe.timeRange.start]);
 
@@ -278,15 +372,51 @@ export function Roadmap({ recipe }) {
     }]);
   }, []);
 
+  // ---------- inline label editing ----------
+  const handleEditBarLabel = useCallback((newLabel, rowId, laneId, pairId) => {
+    if (rowId) {
+      setEditLanes(prev => prev.map(lane => {
+        if (lane.id !== laneId) return lane;
+        return { ...lane, rows: (lane.rows || []).map(r =>
+          r.id === rowId ? { ...r, label: newLabel } : r
+        )};
+      }));
+    }
+    // For single-row bars (no rowId), the label is from briefPairs — we don't edit it here
+    // (briefPairs are shared recipe-level definitions)
+  }, []);
+
+  useEffect(() => {
+    if (!editMode) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'F2' && selected?.kind === 'briefRange' && selected.data.barSvgX != null) {
+        const d = selected.data;
+        setInlineEdit({
+          x: d.barSvgX, y: d.barSvgY, w: Math.max(d.barSvgW, 120),
+          value: d.rowLabel || d.label || '',
+          rowId: d.rowId || null, laneId: d.laneId, pairId: d.pairId,
+        });
+      }
+      if (e.key === 'Escape') setInlineEdit(null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [editMode, selected]);
+
   // ---------- export ----------
   const handleExportRecipe = useCallback(() => {
-    downloadJSON({ ...recipe, lanes: editLanes, milestones: editMilestones },
-      `${(recipe.title || 'recipe').replace(/\s+/g, '_')}.json`);
-  }, [recipe, editLanes, editMilestones]);
+    const text = generateNL(recipe, editLanes, editMilestones, briefPairs);
+    downloadText(text, `${(recipe.title || 'recipe').replace(/\s+/g, '_')}.txt`);
+  }, [recipe, editLanes, editMilestones, briefPairs]);
 
   const handleExportDB = useCallback(() => {
-    downloadJSON(editMilestones, 'milestones-db.json');
-  }, [editMilestones]);
+    const csv = milestonesToCSV(editMilestones, recipe.milestoneDefinitions);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'milestones-db.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }, [editMilestones, recipe.milestoneDefinitions]);
 
   // ---------- visible lanes & layout ----------
   const visibleLanes = useMemo(
@@ -576,6 +706,7 @@ export function Roadmap({ recipe }) {
                 onHoverOwner={setHoveredOwner}
                 editMode={editMode}
                 onBarDragStart={handleBarDragStart}
+                onMilestoneDragStart={handleMilestoneDragStart}
                 isDragTarget={editMode && dragTargetLaneId === item.lane.id}
               />
             );
@@ -701,10 +832,44 @@ export function Roadmap({ recipe }) {
               </text>
             </g>
           )}
+          {/* Inline label editor (F2) */}
+          {editMode && inlineEdit && (
+            <foreignObject x={inlineEdit.x} y={inlineEdit.y - 1} width={inlineEdit.w} height={22}>
+              <input
+                // @ts-ignore xmlns needed for SVG foreignObject
+                xmlns="http://www.w3.org/1999/xhtml"
+                autoFocus
+                defaultValue={inlineEdit.value}
+                style={{
+                  width: '100%', height: '100%',
+                  background: 'white', border: '2px solid #3b82f6',
+                  borderRadius: 3, padding: '0 4px',
+                  fontSize: 11, fontWeight: 600, outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+                onBlur={(e) => { handleEditBarLabel(e.target.value, inlineEdit.rowId, inlineEdit.laneId, inlineEdit.pairId); setInlineEdit(null); }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { handleEditBarLabel(e.target.value, inlineEdit.rowId, inlineEdit.laneId, inlineEdit.pairId); setInlineEdit(null); }
+                  if (e.key === 'Escape') setInlineEdit(null);
+                  e.stopPropagation();
+                }}
+              />
+            </foreignObject>
+          )}
         </svg>
       </div>
 
-      {selected && <DetailPanel selected={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <DetailPanel
+          selected={selected}
+          onClose={() => setSelected(null)}
+          editMode={editMode}
+          onEditLabel={selected?.kind === 'briefRange' && selected.data.rowId
+            ? (v) => handleEditBarLabel(v, selected.data.rowId, selected.data.laneId, selected.data.pairId)
+            : undefined
+          }
+        />
+      )}
 
       {!selected && (
         <div className="mt-4 text-center text-sm text-slate-400">
