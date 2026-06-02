@@ -1,32 +1,32 @@
-import { X, Calendar, User, Tag } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Calendar, User, Tag, Trash2 } from 'lucide-react';
 import { fmtFullDate, durationDays } from '../utils/dates';
 
-/**
- * Bottom panel showing details when something is selected.
- * Supported kinds:
- *   - 'lane'       — clicked the left label box
- *   - 'milestone'  — clicked a milestone point
- *   - 'briefRange' — clicked the lane-internal brief range bar
- */
-export function DetailPanel({ selected, onClose, editMode, onEditLabel }) {
+export function DetailPanel({
+  selected, onClose,
+  editMode,
+  onEditLabel, onEditLane, onDeleteLane, onDeleteRow,
+}) {
   const { kind, data, lane } = selected;
   const isLane = kind === 'lane';
   const isMilestone = kind === 'milestone';
   const isBriefRange = kind === 'briefRange';
 
-  // header styling depends on what's selected
   const headerColor = isLane ? data.color : lane?.color || '#475569';
-  const headerBg = isLane ? data.bg : lane?.bg || '#f1f5f9';
+  const headerBg   = isLane ? data.bg   : lane?.bg   || '#f1f5f9';
+
   const labelTag = isLane
     ? 'Lane'
     : isMilestone
       ? (lane ? `${lane.label} · Milestone` : 'Milestone')
       : `${lane?.label || ''} · Range`;
+
+  // For briefRange show row label first (row.label is the specific item name)
   const title = isLane
     ? data.label
     : isMilestone
       ? (data.name || selected.style?.label || 'Milestone')
-      : data.label || 'Range';
+      : data.rowLabel || data.label || 'Range';
 
   return (
     <div className="mt-4 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -49,15 +49,86 @@ export function DetailPanel({ selected, onClose, editMode, onEditLabel }) {
       </div>
 
       <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-4 text-sm">
-        {isLane && <LaneBody data={data} />}
+        {isLane && (
+          <LaneBody
+            data={data}
+            editMode={editMode}
+            onEditLane={onEditLane}
+            onDeleteLane={onDeleteLane}
+          />
+        )}
         {isMilestone && <MilestoneBody data={data} style={selected.style} lane={lane} />}
-        {isBriefRange && <BriefRangeBody data={data} row={selected.row} editMode={editMode} onEditLabel={onEditLabel} />}
+        {isBriefRange && (
+          <BriefRangeBody
+            data={data}
+            row={selected.row}
+            editMode={editMode}
+            onEditLabel={onEditLabel}
+            onDeleteRow={onDeleteRow}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function LaneBody({ data }) {
+function LaneBody({ data, editMode, onEditLane, onDeleteLane }) {
+  const [labelDraft, setLabelDraft] = useState(data.label);
+  useEffect(() => setLabelDraft(data.label), [data.label, data.id]);
+  const commitLabel = () => {
+    if (labelDraft !== data.label) onEditLane?.({ label: labelDraft });
+  };
+
+  if (editMode && onEditLane) {
+    return (
+      <>
+        <Field icon={<Tag size={14} />} label="Lane 이름">
+          <input
+            className="border border-slate-300 rounded px-2 py-0.5 text-sm w-full focus:outline-none focus:border-blue-500"
+            value={labelDraft}
+            onChange={e => setLabelDraft(e.target.value)}
+            onBlur={commitLabel}
+            onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+          />
+        </Field>
+        <Field icon={<Tag size={14} />} label="색상 (accent)">
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={data.color || '#6366f1'}
+              onChange={e => onEditLane({ color: e.target.value })}
+              className="w-8 h-8 rounded cursor-pointer"
+              style={{ border: 'none', padding: 0 }}
+            />
+            <span className="text-xs text-slate-400">{data.color || '#6366f1'}</span>
+          </div>
+        </Field>
+        <Field icon={<Tag size={14} />} label="배경색 (bg)">
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={data.bg || '#f5f3ff'}
+              onChange={e => onEditLane({ bg: e.target.value })}
+              className="w-8 h-8 rounded cursor-pointer"
+              style={{ border: 'none', padding: 0 }}
+            />
+            <span className="text-xs text-slate-400">{data.bg || '#f5f3ff'}</span>
+          </div>
+        </Field>
+        {onDeleteLane && (
+          <div className="md:col-span-3 pt-2 border-t border-slate-100">
+            <button
+              onClick={onDeleteLane}
+              className="inline-flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition"
+            >
+              <Trash2 size={12} /> 이 Lane 삭제
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       <Field icon={<User size={14} />} label="담당">{data.owner || '—'}</Field>
@@ -75,7 +146,6 @@ function LaneBody({ data }) {
 }
 
 function MilestoneBody({ data, style, lane }) {
-  // If the milestone has a rowId, look up the row inside its lane.
   const row = (data.rowId && Array.isArray(lane?.rows))
     ? lane.rows.find(r => r.id === data.rowId)
     : null;
@@ -107,7 +177,7 @@ function MilestoneBody({ data, style, lane }) {
   );
 }
 
-function BriefRangeBody({ data, row, editMode, onEditLabel }) {
+function BriefRangeBody({ data, row, editMode, onEditLabel, onDeleteRow }) {
   return (
     <>
       <Field icon={<Calendar size={14} />} label="기간">
@@ -125,7 +195,7 @@ function BriefRangeBody({ data, row, editMode, onEditLabel }) {
             }}
           />
         ) : (
-          data.label || '—'
+          data.rowLabel || data.label || '—'
         )}
       </Field>
       {(data.rowLabel || row?.label) && (
@@ -139,6 +209,16 @@ function BriefRangeBody({ data, row, editMode, onEditLabel }) {
       <div className="md:col-span-3 text-xs text-slate-500 -mt-2">
         간략 milestone 페어로 정의된 구간입니다. (양 끝점은 점으로 표시되지 않습니다)
       </div>
+      {editMode && onDeleteRow && (
+        <div className="md:col-span-3 pt-2 border-t border-slate-100">
+          <button
+            onClick={onDeleteRow}
+            className="inline-flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition"
+          >
+            <Trash2 size={12} /> 이 Row 삭제
+          </button>
+        </div>
+      )}
     </>
   );
 }

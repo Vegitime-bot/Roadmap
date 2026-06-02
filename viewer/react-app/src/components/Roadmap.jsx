@@ -114,8 +114,9 @@ export function Roadmap({ recipe }) {
   // Vertical drag: which lane is currently highlighted as the drop target
   const [dragTargetLaneId, setDragTargetLaneId] = useState(null);
   const dragTargetLaneIdRef = useRef(null);
-  // Updated every render so drag callbacks always see current layout
+  // Updated every render so drag callbacks always see current layout/lanes
   const layoutItemsRef = useRef([]);
+  const editLanesRef = useRef(editLanes);
 
   // Stable refs for values needed inside drag callbacks without re-creating them
   const dragRef = useRef(null);
@@ -213,13 +214,18 @@ export function Roadmap({ recipe }) {
     if (dr && dr.type === 'move') {
       const newLaneId = dragTargetLaneIdRef.current;
       if (newLaneId && newLaneId !== dr.laneId) {
-        // Commit the lane change onto the already date-shifted editMilestones
+        // Assign to first row of target lane if it's a multi-row lane,
+        // otherwise drop rowId (single-row lane).
+        const targetLane = editLanesRef.current.find(l => l.id === newLaneId);
+        const targetRows = Array.isArray(targetLane?.rows) && targetLane.rows.length > 0
+          ? targetLane.rows : null;
         setEditMilestones(prev => prev.map(ms => {
           const forThisOwner = ms.laneId === dr.laneId &&
             (!dr.rowId || ms.rowId === dr.rowId);
           if (!forThisOwner) return ms;
           const moved = { ...ms, laneId: newLaneId };
-          delete moved.rowId;
+          if (targetRows) moved.rowId = targetRows[0].id;
+          else delete moved.rowId;
           return moved;
         }));
       }
@@ -367,9 +373,34 @@ export function Roadmap({ recipe }) {
   const handleAddLane = useCallback(() => {
     const ts = Date.now();
     const laneId = `lane_${ts}`;
-    setEditLanes(prev => [...prev, {
-      id: laneId, label: 'New Lane', color: '#6366f1', bg: '#f5f3ff',
-    }]);
+    const newLane = { id: laneId, label: 'New Lane', color: '#6366f1', bg: '#f5f3ff' };
+    setEditLanes(prev => [...prev, newLane]);
+    setSelected({ kind: 'lane', data: newLane });
+  }, []);
+
+  const handleEditLane = useCallback((laneId, updates) => {
+    setEditLanes(prev => prev.map(l => l.id !== laneId ? l : { ...l, ...updates }));
+    setSelected(prev =>
+      prev?.kind === 'lane' && prev.data.id === laneId
+        ? { ...prev, data: { ...prev.data, ...updates } }
+        : prev
+    );
+  }, []);
+
+  const handleDeleteLane = useCallback((laneId) => {
+    setEditLanes(prev => prev.filter(l => l.id !== laneId));
+    setEditMilestones(prev => prev.filter(ms => ms.laneId !== laneId));
+    setSelected(null);
+  }, []);
+
+  const handleDeleteRow = useCallback((laneId, rowId) => {
+    setEditLanes(prev => prev.map(l =>
+      l.id !== laneId ? l : { ...l, rows: (l.rows || []).filter(r => r.id !== rowId) }
+    ));
+    setEditMilestones(prev => prev.filter(ms =>
+      !(ms.laneId === laneId && ms.rowId === rowId)
+    ));
+    setSelected(null);
   }, []);
 
   // ---------- inline label editing ----------
@@ -581,8 +612,9 @@ export function Roadmap({ recipe }) {
     briefPairs, briefMilestonesByLane, briefMilestonesByRow,
   ]);
 
-  // Keep layoutItemsRef in sync so drag callbacks see current lane positions
+  // Keep refs in sync so drag callbacks always see current state
   layoutItemsRef.current = layoutItems;
+  editLanesRef.current = editLanes;
 
   // ---------- date → x (zoom-scaled width) ----------
   // The chart uses the available container width as the base, so the SVG
@@ -864,10 +896,19 @@ export function Roadmap({ recipe }) {
           selected={selected}
           onClose={() => setSelected(null)}
           editMode={editMode}
-          onEditLabel={selected?.kind === 'briefRange' && selected.data.rowId
+          onEditLabel={editMode && selected?.kind === 'briefRange' && selected.data.rowId
             ? (v) => handleEditBarLabel(v, selected.data.rowId, selected.data.laneId, selected.data.pairId)
             : undefined
           }
+          onEditLane={editMode && selected?.kind === 'lane'
+            ? (updates) => handleEditLane(selected.data.id, updates)
+            : undefined}
+          onDeleteLane={editMode && selected?.kind === 'lane'
+            ? () => handleDeleteLane(selected.data.id)
+            : undefined}
+          onDeleteRow={editMode && selected?.kind === 'briefRange' && selected.data.rowId
+            ? () => handleDeleteRow(selected.data.laneId, selected.data.rowId)
+            : undefined}
         />
       )}
 
