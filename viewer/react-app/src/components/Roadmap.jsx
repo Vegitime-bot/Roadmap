@@ -122,6 +122,7 @@ export function Roadmap({ recipe }) {
   const dragRef = useRef(null);
   const chartWRef = useRef(0);
   const totalDaysRef = useRef(0);
+  const editMilestonesRef = useRef(editMilestones);
 
   // ---------- zoom (state + keyboard + wheel) ----------
   // Must be declared before drag handlers so scrollContainerRef is in scope
@@ -214,20 +215,51 @@ export function Roadmap({ recipe }) {
     if (dr && dr.type === 'move') {
       const newLaneId = dragTargetLaneIdRef.current;
       if (newLaneId && newLaneId !== dr.laneId) {
-        // Assign to first row of target lane if it's a multi-row lane,
-        // otherwise drop rowId (single-row lane).
+        const ts = Date.now();
+        const newRowId = `row_${ts}`;
         const targetLane = editLanesRef.current.find(l => l.id === newLaneId);
-        const targetRows = Array.isArray(targetLane?.rows) && targetLane.rows.length > 0
-          ? targetLane.rows : null;
-        setEditMilestones(prev => prev.map(ms => {
-          const forThisOwner = ms.laneId === dr.laneId &&
-            (!dr.rowId || ms.rowId === dr.rowId);
-          if (!forThisOwner) return ms;
-          const moved = { ...ms, laneId: newLaneId };
-          if (targetRows) moved.rowId = targetRows[0].id;
-          else delete moved.rowId;
-          return moved;
-        }));
+        const hasRows = Array.isArray(targetLane?.rows) && targetLane.rows.length > 0;
+        const srcRow = dr.rowId
+          ? editLanesRef.current.find(l => l.id === dr.laneId)?.rows?.find(r => r.id === dr.rowId)
+          : null;
+        const hasTargetMs = editMilestonesRef.current.some(ms => ms.laneId === newLaneId);
+
+        if (hasRows) {
+          // Multi-row target: add a new row for the dropped bar
+          setEditLanes(prev => prev.map(l =>
+            l.id !== newLaneId ? l : { ...l, rows: [...l.rows, { id: newRowId, label: srcRow?.label || 'Row' }] }
+          ));
+          setEditMilestones(prev => prev.map(ms => {
+            const forThis = ms.laneId === dr.laneId && (!dr.rowId || ms.rowId === dr.rowId);
+            return forThis ? { ...ms, laneId: newLaneId, rowId: newRowId } : ms;
+          }));
+        } else if (hasTargetMs) {
+          // Single-row target with existing milestones: convert to multi-row
+          const defaultRowId = `row_${ts - 1}`;
+          setEditLanes(prev => prev.map(l =>
+            l.id !== newLaneId ? l : {
+              ...l,
+              rows: [
+                { id: defaultRowId, label: targetLane?.label || 'Row 1' },
+                { id: newRowId, label: srcRow?.label || 'Row 2' },
+              ],
+            }
+          ));
+          setEditMilestones(prev => prev.map(ms => {
+            if (ms.laneId === newLaneId && !ms.rowId) return { ...ms, rowId: defaultRowId };
+            const forThis = ms.laneId === dr.laneId && (!dr.rowId || ms.rowId === dr.rowId);
+            return forThis ? { ...ms, laneId: newLaneId, rowId: newRowId } : ms;
+          }));
+        } else {
+          // Empty target lane: simple drop
+          setEditMilestones(prev => prev.map(ms => {
+            const forThis = ms.laneId === dr.laneId && (!dr.rowId || ms.rowId === dr.rowId);
+            if (!forThis) return ms;
+            const moved = { ...ms, laneId: newLaneId };
+            delete moved.rowId;
+            return moved;
+          }));
+        }
       }
     }
     dragTargetLaneIdRef.current = null;
@@ -615,6 +647,7 @@ export function Roadmap({ recipe }) {
   // Keep refs in sync so drag callbacks always see current state
   layoutItemsRef.current = layoutItems;
   editLanesRef.current = editLanes;
+  editMilestonesRef.current = editMilestones;
 
   // ---------- date → x (zoom-scaled width) ----------
   // The chart uses the available container width as the base, so the SVG
