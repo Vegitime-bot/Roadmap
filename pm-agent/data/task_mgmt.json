@@ -1,0 +1,75 @@
+{
+  "_meta": {
+    "system": "과제관리 시스템 (Task Management System)",
+    "engine": "PostgreSQL (프로토타입에서는 JSON으로 흉내)",
+    "note": "실배포 시 datasource.py의 이 로더를 psycopg 연결로 교체. 스키마/컬럼명은 동일하게 유지하면 나머지 코드는 그대로 동작.",
+    "code_convention": "task_code = 'TP-25-<DIV>-NNN' (과제관리 포털 표기)"
+  },
+  "tables": {
+    "projects": {
+      "columns": ["task_code", "name", "division", "program", "stage", "pm", "status", "progress_pct", "start_date", "target_date"],
+      "rows": [
+        {"task_code": "TP-25-MEM-001", "name": "DDR5 16Gb 8세대", "division": "메모리", "program": "DDR5", "stage": "양산이관", "pm": "김철수", "status": "정상", "progress_pct": 92, "start_date": "2025-01-10", "target_date": "2026-03-31"},
+        {"task_code": "TP-25-MEM-002", "name": "LPDDR6 24Gb", "division": "메모리", "program": "LPDDR6", "stage": "개발", "pm": "이영희", "status": "지연", "progress_pct": 61, "start_date": "2025-03-01", "target_date": "2026-09-30"},
+        {"task_code": "TP-25-MEM-003", "name": "HBM4 12H", "division": "메모리", "program": "HBM4", "stage": "선행", "pm": "박민수", "status": "위험", "progress_pct": 34, "start_date": "2025-06-01", "target_date": "2027-06-30"},
+        {"task_code": "TP-25-SLSI-001", "name": "Exynos Modem 5G", "division": "시스템LSI", "program": "Modem", "stage": "개발", "pm": "정수진", "status": "정상", "progress_pct": 75, "start_date": "2025-02-15", "target_date": "2026-06-30"},
+        {"task_code": "TP-25-SLSI-002", "name": "DDIC OLED 120Hz", "division": "시스템LSI", "program": "DDIC", "stage": "양산이관", "pm": "최지훈", "status": "정상", "progress_pct": 88, "start_date": "2024-11-01", "target_date": "2026-02-28"},
+        {"task_code": "TP-25-SLSI-003", "name": "ISOCELL 200MP", "division": "시스템LSI", "program": "ISOCELL", "stage": "개발", "pm": "한서연", "status": "지연", "progress_pct": 52, "start_date": "2025-04-01", "target_date": "2026-12-31"},
+        {"task_code": "TP-25-FND-001", "name": "SF2 PDK 개발", "division": "파운드리", "program": "SF2", "stage": "선행", "pm": "오세훈", "status": "정상", "progress_pct": 45, "start_date": "2025-01-20", "target_date": "2027-01-31"},
+        {"task_code": "TP-25-FND-002", "name": "SF4X 양산 Ramp", "division": "파운드리", "program": "SF4X", "stage": "양산이관", "pm": "윤아름", "status": "위험", "progress_pct": 70, "start_date": "2024-09-01", "target_date": "2026-05-31"}
+      ]
+    },
+    "milestones": {
+      "columns": ["task_code", "gate", "planned_date", "actual_date"],
+      "rows": [
+        {"task_code": "TP-25-MEM-001", "gate": "착수", "planned_date": "2025-01-10", "actual_date": "2025-01-10"},
+        {"task_code": "TP-25-MEM-001", "gate": "설계", "planned_date": "2025-05-31", "actual_date": "2025-06-10"},
+        {"task_code": "TP-25-MEM-001", "gate": "시제작", "planned_date": "2025-10-31", "actual_date": "2025-11-05"},
+        {"task_code": "TP-25-MEM-001", "gate": "검증", "planned_date": "2026-01-31", "actual_date": null},
+        {"task_code": "TP-25-MEM-001", "gate": "양산승인", "planned_date": "2026-03-31", "actual_date": null},
+
+        {"task_code": "TP-25-MEM-002", "gate": "착수", "planned_date": "2025-03-01", "actual_date": "2025-03-15"},
+        {"task_code": "TP-25-MEM-002", "gate": "설계", "planned_date": "2025-08-31", "actual_date": "2025-10-20"},
+        {"task_code": "TP-25-MEM-002", "gate": "시제작", "planned_date": "2026-01-31", "actual_date": null},
+        {"task_code": "TP-25-MEM-002", "gate": "검증", "planned_date": "2026-06-30", "actual_date": null},
+        {"task_code": "TP-25-MEM-002", "gate": "양산승인", "planned_date": "2026-09-30", "actual_date": null},
+
+        {"task_code": "TP-25-MEM-003", "gate": "착수", "planned_date": "2025-06-01", "actual_date": "2025-06-20"},
+        {"task_code": "TP-25-MEM-003", "gate": "설계", "planned_date": "2025-12-31", "actual_date": null},
+        {"task_code": "TP-25-MEM-003", "gate": "시제작", "planned_date": "2026-06-30", "actual_date": null},
+        {"task_code": "TP-25-MEM-003", "gate": "검증", "planned_date": "2026-12-31", "actual_date": null},
+        {"task_code": "TP-25-MEM-003", "gate": "양산승인", "planned_date": "2027-06-30", "actual_date": null},
+
+        {"task_code": "TP-25-SLSI-001", "gate": "착수", "planned_date": "2025-02-15", "actual_date": "2025-02-15"},
+        {"task_code": "TP-25-SLSI-001", "gate": "설계", "planned_date": "2025-07-31", "actual_date": "2025-08-02"},
+        {"task_code": "TP-25-SLSI-001", "gate": "시제작", "planned_date": "2025-12-31", "actual_date": "2025-12-28"},
+        {"task_code": "TP-25-SLSI-001", "gate": "검증", "planned_date": "2026-04-30", "actual_date": null},
+        {"task_code": "TP-25-SLSI-001", "gate": "양산승인", "planned_date": "2026-06-30", "actual_date": null},
+
+        {"task_code": "TP-25-SLSI-002", "gate": "착수", "planned_date": "2024-11-01", "actual_date": "2024-11-01"},
+        {"task_code": "TP-25-SLSI-002", "gate": "설계", "planned_date": "2025-03-31", "actual_date": "2025-03-25"},
+        {"task_code": "TP-25-SLSI-002", "gate": "시제작", "planned_date": "2025-08-31", "actual_date": "2025-09-03"},
+        {"task_code": "TP-25-SLSI-002", "gate": "검증", "planned_date": "2025-12-31", "actual_date": "2026-01-08"},
+        {"task_code": "TP-25-SLSI-002", "gate": "양산승인", "planned_date": "2026-02-28", "actual_date": null},
+
+        {"task_code": "TP-25-SLSI-003", "gate": "착수", "planned_date": "2025-04-01", "actual_date": "2025-04-10"},
+        {"task_code": "TP-25-SLSI-003", "gate": "설계", "planned_date": "2025-09-30", "actual_date": "2025-11-15"},
+        {"task_code": "TP-25-SLSI-003", "gate": "시제작", "planned_date": "2026-03-31", "actual_date": null},
+        {"task_code": "TP-25-SLSI-003", "gate": "검증", "planned_date": "2026-08-31", "actual_date": null},
+        {"task_code": "TP-25-SLSI-003", "gate": "양산승인", "planned_date": "2026-12-31", "actual_date": null},
+
+        {"task_code": "TP-25-FND-001", "gate": "착수", "planned_date": "2025-01-20", "actual_date": "2025-01-20"},
+        {"task_code": "TP-25-FND-001", "gate": "설계", "planned_date": "2025-09-30", "actual_date": "2025-09-28"},
+        {"task_code": "TP-25-FND-001", "gate": "시제작", "planned_date": "2026-06-30", "actual_date": null},
+        {"task_code": "TP-25-FND-001", "gate": "검증", "planned_date": "2026-12-31", "actual_date": null},
+        {"task_code": "TP-25-FND-001", "gate": "양산승인", "planned_date": "2027-01-31", "actual_date": null},
+
+        {"task_code": "TP-25-FND-002", "gate": "착수", "planned_date": "2024-09-01", "actual_date": "2024-09-01"},
+        {"task_code": "TP-25-FND-002", "gate": "설계", "planned_date": "2025-01-31", "actual_date": "2025-02-20"},
+        {"task_code": "TP-25-FND-002", "gate": "시제작", "planned_date": "2025-07-31", "actual_date": "2025-09-15"},
+        {"task_code": "TP-25-FND-002", "gate": "검증", "planned_date": "2025-12-31", "actual_date": "2026-03-10"},
+        {"task_code": "TP-25-FND-002", "gate": "양산승인", "planned_date": "2026-05-31", "actual_date": null}
+      ]
+    }
+  }
+}
