@@ -56,16 +56,42 @@ pm-agent/
 └── renderer.html             시각화 어댑터 (교체 가능) + 챗 UI
 ```
 
-## 실배포로 전환하기
+## 환경변수 (런타임 설정)
 
-1. **DB 연결** — `pm_agent/datasource.py`의 `_load_system`을 두 개의 psycopg 연결로 교체.
-   반드시 **read-only 계정** 사용. 테이블/컬럼명을 유지하면 상위 코드는 무변경.
+비밀정보/엔드포인트는 코드가 아니라 전부 환경변수로 주입한다.
+
+| 변수 | 용도 | 없을 때 |
+|---|---|---|
+| `PM_AGENT_LLM_BASE_URL` | 사내 LLM 게이트웨이 baseURL (폐쇄망 운영) | 게이트웨이 미사용 |
+| `PM_AGENT_LLM_TOKEN` | 게이트웨이 Bearer 토큰 | — |
+| `PM_AGENT_LLM_API` | `openai`(기본) \| `anthropic` — 게이트웨이 프로토콜 | openai |
+| `PM_AGENT_MODEL` | 모델 id | `claude-sonnet-5` |
+| `ANTHROPIC_API_KEY` | 공개 Anthropic API (개발env2 실험용) | — |
+| `PG_TASK_DSN` / `PG_MGMT_DSN` | 두 PostgreSQL read-only 접속 문자열 | sample JSON 사용 |
+
+**자연어 해석 경로 선택 (자동):** `PM_AGENT_LLM_BASE_URL` 있으면 사내 게이트웨이 →
+없고 `ANTHROPIC_API_KEY` 있으면 공개 API → 둘 다 없으면 **규칙 기반**. 어떤 경로든
+실패 시 규칙 기반으로 폴백하므로 서비스가 죽지 않는다 (사용한 엔진은 응답 `meta.engine`에 표기).
+
+## 폐쇄망 배포 (Docker + jfrog + Jenkins)
+
+- `Dockerfile` — base image·pip를 **jfrog**에서만 받도록 `--build-arg`로 경로 주입.
+  v1(규칙 기반)은 외부 의존성 0 → 아주 작은 이미지.
+- `requirements.txt` — 실제 PG 연동/FastAPI 승격 시에만 psycopg 등 추가 (jfrog PyPI).
+- `Jenkinsfile` — 개발env3에서 build → jfrog registry push → 운영env에서 pull·run.
+  비밀정보(PG DSN, LLM 토큰)는 이미지에 굽지 않고 배포 시 env로 주입.
+
+`REPLACE_ME.jfrog.corp.local` 자리에 사내 jfrog 경로를, `credentialsId`에 Jenkins
+자격증명 id를 채우면 된다.
+
+## 실배포로 전환하기 (코드 델타)
+
+1. **DB 연결** — `pm_agent/datasource.py`의 `_load_system`을 두 개의 psycopg 연결로 교체
+   (`PG_TASK_DSN`/`PG_MGMT_DSN`). 반드시 **read-only 계정**. 테이블/컬럼명 유지 시 상위 무변경.
 2. **크로스워크** — 크로스워크가 자체 테이블이면 `resolver._crosswalk`를 DB 조회로 교체.
-3. **자연어 해석** — `ANTHROPIC_API_KEY` 환경변수를 설정하면 `interpret`가 자동으로
-   Claude tool-use 경로를 사용 (모델은 `PM_AGENT_MODEL`, 기본 `claude-sonnet-5`).
-   키가 없으면 규칙 기반으로 동작.
-4. **API 서버** — `server.py`(stdlib) 자리에 FastAPI + 인증/권한 필터/감사 로그를 얹기.
-   프런트(`renderer.html`)는 `/chat` 계약이 같으므로 그대로 재사용.
+3. **자연어 해석** — 위 환경변수만 설정하면 자동 활성화 (코드 변경 없음).
+4. **API 서버** — `server.py`(stdlib) 자리에 FastAPI + 인증(SSO)/권한 필터/감사 로그를
+   얹기. 프런트(`renderer.html`)는 `/chat` 계약이 같으므로 그대로 재사용.
 
 ## 핵심 설계 원칙
 
