@@ -63,6 +63,7 @@ pipeline {
               -e PM_AGENT_LLM_BASE_URL="$PM_AGENT_LLM_BASE_URL" \
               -e PM_AGENT_LLM_TOKEN="$PM_AGENT_LLM_TOKEN" \
               -e PM_AGENT_LLM_API="openai" \
+              -e PM_AGENT_LLM_PATH="/chat/completion" \
               -e PM_AGENT_MODEL="claude-sonnet-5" \
               ${IMAGE}
           '''

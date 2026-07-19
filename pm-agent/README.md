@@ -65,7 +65,12 @@ pm-agent/
 | `PM_AGENT_LLM_BASE_URL` | 사내 LLM 게이트웨이 baseURL (폐쇄망 운영) | 게이트웨이 미사용 |
 | `PM_AGENT_LLM_TOKEN` | 게이트웨이 Bearer 토큰 | — |
 | `PM_AGENT_LLM_API` | `openai`(기본) \| `anthropic` — 게이트웨이 프로토콜 | openai |
+| `PM_AGENT_LLM_PATH` | 엔드포인트 경로 (게이트웨이마다 다름) | openai=`/chat/completions`, anthropic=`/messages` |
 | `PM_AGENT_MODEL` | 모델 id | `claude-sonnet-5` |
+
+> 사내 게이트웨이 예시: `PM_AGENT_LLM_BASE_URL=https://llm-gw.corp.local/llm/v1`,
+> `PM_AGENT_LLM_PATH=/chat/completion` (사내는 단수형 `completion`) →
+> 최종 호출 `https://llm-gw.corp.local/llm/v1/chat/completion`.
 | `ANTHROPIC_API_KEY` | 공개 Anthropic API (개발env2 실험용) | — |
 | `PG_TASK_DSN` / `PG_MGMT_DSN` | 두 PostgreSQL read-only 접속 문자열 | sample JSON 사용 |
 

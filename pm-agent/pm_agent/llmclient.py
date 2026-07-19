@@ -7,9 +7,11 @@ Anthropic 호환(/messages, tool_use)이든 env로 스위치. 개발env2에서�
 공개 Anthropic API를 그대로 쓸 수도 있다.
 
 설정 (환경변수):
-  PM_AGENT_LLM_BASE_URL   예) https://llm-gw.corp.local/v1   (있으면 게이트웨이 모드)
+  PM_AGENT_LLM_BASE_URL   예) https://llm-gw.corp.local/llm/v1   (있으면 게이트웨이 모드)
   PM_AGENT_LLM_TOKEN      Bearer 토큰
   PM_AGENT_LLM_API        "openai" (기본) | "anthropic"
+  PM_AGENT_LLM_PATH       엔드포인트 경로. 게이트웨이마다 다름 (예: 사내는 /chat/completion).
+                          미설정 시 openai=/chat/completions, anthropic=/messages
   PM_AGENT_MODEL          모델 id (예: claude-sonnet-5)
 
 호출부(interpret.py)는 build_query_plan 도구 스키마를 넘기고, 검증된 plan
@@ -30,12 +32,21 @@ def _post(url: str, headers: dict, body: dict) -> dict:
         return json.loads(resp.read())
 
 
+def _endpoint(cfg: dict) -> str:
+    """게이트웨이 엔드포인트 URL. PM_AGENT_LLM_PATH로 경로를 덮어쓸 수 있다."""
+    base = cfg["base"].rstrip("/")
+    path = cfg.get("path")
+    if not path:
+        path = "/messages" if cfg["api"] == "anthropic" else "/chat/completions"
+    return base + "/" + path.lstrip("/")
+
+
 def call_plan(cfg: dict, system: str, tool: dict, user_text: str) -> dict:
     """
     LLM에게 tool(=build_query_plan) 호출을 강제해 plan dict를 얻는다.
     실패 시 예외를 던진다(상위에서 규칙 기반으로 폴백).
     """
-    base = cfg["base"].rstrip("/")
+    url = _endpoint(cfg)
     model = cfg["model"]
     if cfg["api"] == "anthropic":
         headers = {"content-type": "application/json", "anthropic-version": "2023-06-01"}
@@ -49,7 +60,7 @@ def call_plan(cfg: dict, system: str, tool: dict, user_text: str) -> dict:
             "tool_choice": {"type": "tool", "name": tool["name"]},
             "messages": [{"role": "user", "content": user_text}],
         }
-        data = _post(f"{base}/messages", headers, body)
+        data = _post(url, headers, body)
         for block in data.get("content", []):
             if block.get("type") == "tool_use":
                 return block["input"]
@@ -63,7 +74,7 @@ def call_plan(cfg: dict, system: str, tool: dict, user_text: str) -> dict:
         "tools": [{"type": "function", "function": tool}],
         "tool_choice": {"type": "function", "function": {"name": tool["name"]}},
     }
-    data = _post(f"{base}/chat/completions", headers, body)
+    data = _post(url, headers, body)
     calls = data["choices"][0]["message"].get("tool_calls") or []
     if not calls:
         raise RuntimeError("openai: no tool_calls")
@@ -78,6 +89,7 @@ def config_from_env() -> dict | None:
             "base": os.environ["PM_AGENT_LLM_BASE_URL"],
             "token": os.environ.get("PM_AGENT_LLM_TOKEN", ""),
             "api": os.environ.get("PM_AGENT_LLM_API", "openai").lower(),
+            "path": os.environ.get("PM_AGENT_LLM_PATH"),
             "model": model, "auth": "bearer", "label": "gateway",
         }
     if os.environ.get("ANTHROPIC_API_KEY"):       # 공개 Anthropic API (개발env2)
